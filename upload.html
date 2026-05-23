@@ -28,9 +28,9 @@
     </nav>
 
     <div class="page-hero-small">
-        <span class="badge">Rekomendasi Ahli</span>
+        <span class="badge">AI Generate Terali</span>
         <h1>Upload Foto Area Rumah</h1>
-        <p>Upload foto jendela, pintu, atau balkon Anda — tim ahli kami akan merekomendasikan model terali yang paling cocok.</p>
+        <p>Upload foto jendela, pintu, atau balkon Anda, lalu lihat mockup terali otomatis dengan style pilihan.</p>
     </div>
 
     <section class="upload-section" style="padding-top:2rem">
@@ -58,6 +58,53 @@
                     </label>
                 </div>
 
+                <div class="ai-style-block">
+                    <div class="field-heading">
+                        <span class="step-badge step-badge-small">2</span>
+                        <div>
+                            <h4>AI Style Selector</h4>
+                            <p>Pilih karakter desain terali yang ingin dibuat.</p>
+                        </div>
+                    </div>
+                    <div class="style-selector">
+                        <label class="style-option">
+                            <input type="radio" name="ai-style" value="minimalis" checked>
+                            <div class="style-card">
+                                <i class="fa-solid fa-grip-lines-vertical"></i>
+                                <span>Minimalis</span>
+                            </div>
+                        </label>
+                        <label class="style-option">
+                            <input type="radio" name="ai-style" value="industrial">
+                            <div class="style-card">
+                                <i class="fa-solid fa-table-cells-large"></i>
+                                <span>Industrial</span>
+                            </div>
+                        </label>
+                        <label class="style-option">
+                            <input type="radio" name="ai-style" value="mewah">
+                            <div class="style-card">
+                                <i class="fa-solid fa-gem"></i>
+                                <span>Mewah</span>
+                            </div>
+                        </label>
+                        <label class="style-option">
+                            <input type="radio" name="ai-style" value="klasik">
+                            <div class="style-card">
+                                <i class="fa-solid fa-feather"></i>
+                                <span>Klasik</span>
+                            </div>
+                        </label>
+                        <label class="style-option">
+                            <input type="radio" name="ai-style" value="islami">
+                            <div class="style-card">
+                                <i class="fa-solid fa-star-and-crescent"></i>
+                                <span>Islami</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
                 <div class="dropzone" id="dropzone">
                     <div class="dropzone-default" id="dropzone-default">
                         <i class="fa-solid fa-cloud-arrow-up"></i>
@@ -79,33 +126,67 @@
                 </div>
 
                 <button class="btn btn-primary upload-submit-btn" id="upload-submit" disabled>
-                    <i class="fa-solid fa-paper-plane"></i> Minta Rekomendasi
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> Generate AI Design
                 </button>
             </div>
 
             <div class="recommendation-panel" id="recommendation-panel">
                 <div class="rec-idle" id="rec-idle">
-                    <i class="fa-solid fa-lightbulb"></i>
-                    <p>Rekomendasi model akan muncul di sini setelah Anda upload foto dan memilih area.</p>
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    <p>Mockup Before vs AI Design akan muncul di sini setelah foto, area, dan style dipilih.</p>
                 </div>
                 <div class="rec-loading" id="rec-loading" style="display:none">
                     <div class="spinner"></div>
-                    <p>Menganalisa foto Anda...</p>
+                    <p>Menganalisa foto dan membuat desain terali...</p>
                 </div>
                 <div class="rec-result" id="rec-result" style="display:none">
                     <div class="rec-result-header">
                         <i class="fa-solid fa-circle-check"></i>
                         <div>
-                            <h3>Rekomendasi untuk Anda</h3>
+                            <h3>Before vs AI Design</h3>
                             <p id="rec-area-label">Berdasarkan foto yang Anda upload</p>
                         </div>
                     </div>
+
+                    <div class="ai-preview-grid">
+                        <figure class="ai-preview-card">
+                            <span>Foto Asli</span>
+                            <img id="ai-before-img" src="" alt="Foto asli area rumah">
+                        </figure>
+                        <figure class="ai-preview-card ai-preview-generated">
+                            <span>AI Design</span>
+                            <img id="ai-after-img" src="" alt="Mockup AI desain terali">
+                            <small>Bukan ambil dari internet</small>
+                        </figure>
+                    </div>
+
+                    <div class="ai-analysis" id="ai-analysis"></div>
+
+                    <div class="ai-prompt-box">
+                        <div class="ai-box-label">
+                            <i class="fa-solid fa-terminal"></i>
+                            Prompt otomatis
+                        </div>
+                        <p id="ai-prompt-text"></p>
+                    </div>
+
+                    <div class="ai-estimate-card">
+                        <div>
+                            <span>Estimasi Produksi</span>
+                            <strong id="ai-estimate-price">Rp 0</strong>
+                        </div>
+                        <p id="ai-estimate-detail"></p>
+                    </div>
+
+                    <h4 class="rec-products-title">Model katalog pendukung</h4>
                     <div class="rec-products" id="rec-products"></div>
                     <div class="rec-cta">
-                        <p class="rec-cta-text">Butuh konsultasi lebih lanjut?</p>
-                        <a href="https://wa.me/6281234567890?text=Halo+Hidayat+Teknik%2C+saya+ingin+konsultasi+terali"
-                           target="_blank" class="btn btn-whatsapp">
-                            <i class="fa-brands fa-whatsapp"></i> Chat via WhatsApp
+                        <button type="button" class="btn btn-outline" id="download-ai-preview">
+                            <i class="fa-solid fa-download"></i> Download Preview
+                        </button>
+                        <a href="https://wa.me/6281234567890?text=Halo+Hidayat+Teknik%2C+saya+ingin+konsultasi+desain+AI+terali"
+                           target="_blank" class="btn btn-whatsapp" id="ai-whatsapp-link">
+                            <i class="fa-brands fa-whatsapp"></i> Konsultasi
                         </a>
                     </div>
                 </div>

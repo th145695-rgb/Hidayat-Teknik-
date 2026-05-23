@@ -295,6 +295,15 @@ const recLoading      = $('rec-loading');
 const recResult       = $('rec-result');
 const recProducts     = $('rec-products');
 const recAreaLabel    = $('rec-area-label');
+const uploadNotes     = $('upload-notes');
+const aiBeforeImg     = $('ai-before-img');
+const aiAfterImg      = $('ai-after-img');
+const aiAnalysis      = $('ai-analysis');
+const aiPromptText    = $('ai-prompt-text');
+const aiEstimatePrice = $('ai-estimate-price');
+const aiEstimateDetail = $('ai-estimate-detail');
+const aiDownloadBtn   = $('download-ai-preview');
+const aiWhatsappLink  = $('ai-whatsapp-link');
 
 const recommendations = {
     jendela: { label: 'Berdasarkan foto jendela yang Anda upload',  ids: [1, 2, 4] },
@@ -305,13 +314,72 @@ const recommendations = {
 if (dropzone) {
     let uploadedFile = null;
     let selectedArea = null;
+    let selectedStyle = document.querySelector('input[name="ai-style"]:checked')?.value || 'minimalis';
+    let latestAIPreview = null;
+
+    const areaDetails = {
+        jendela: { label: 'Jendela', widthCm: 120, heightCm: 150, multiplier: 1 },
+        pintu:   { label: 'Pintu',   widthCm: 90,  heightCm: 210, multiplier: 1.15 },
+        balkon:  { label: 'Balkon',  widthCm: 300, heightCm: 110, multiplier: 1.25 }
+    };
+
+    const aiStyles = {
+        minimalis: {
+            label: 'Minimalis',
+            material: 'hollow galvanis 20x40',
+            finish: 'hitam matte',
+            promptTone: 'modern black minimalist grille with clean vertical bars',
+            pricePerM2: 680000
+        },
+        industrial: {
+            label: 'Industrial',
+            material: 'hollow galvanis dan expanded mesh',
+            finish: 'hitam doff tekstur',
+            promptTone: 'industrial black steel grille with geometric grid and diagonal bracing',
+            pricePerM2: 820000
+        },
+        mewah: {
+            label: 'Mewah',
+            material: 'besi tempa premium',
+            finish: 'hitam glossy dengan aksen gold',
+            promptTone: 'luxury black wrought iron grille with elegant gold accents',
+            pricePerM2: 1250000
+        },
+        klasik: {
+            label: 'Klasik',
+            material: 'besi tempa ornamental',
+            finish: 'hitam satin',
+            promptTone: 'classic black wrought iron grille with soft ornamental curves',
+            pricePerM2: 1050000
+        },
+        islami: {
+            label: 'Islami',
+            material: 'laser cut galvanis',
+            finish: 'hitam matte',
+            promptTone: 'black Islamic geometric grille with star pattern and balanced symmetry',
+            pricePerM2: 1120000
+        }
+    };
+
+    const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+    const loadImageFromSrc = (src) => new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = src;
+    });
 
     const validateUpload = () => {
-        if (uploadSubmit) uploadSubmit.disabled = !(uploadedFile && selectedArea);
+        if (uploadSubmit) uploadSubmit.disabled = !(uploadedFile && selectedArea && selectedStyle);
     };
 
     $$('input[name="area-type"]').forEach(radio => {
         radio.addEventListener('change', () => { selectedArea = radio.value; validateUpload(); });
+    });
+
+    $$('input[name="ai-style"]').forEach(radio => {
+        radio.addEventListener('change', () => { selectedStyle = radio.value; validateUpload(); });
     });
 
     const handleFile = (file) => {
@@ -349,13 +417,295 @@ if (dropzone) {
             if (recResult)  recResult.style.display  = 'none';
             if (recLoading) recLoading.style.display = 'none';
             if (recIdle)    recIdle.style.display    = 'flex';
+            if (aiBeforeImg) aiBeforeImg.src = '';
+            if (aiAfterImg) aiAfterImg.src = '';
+            latestAIPreview = null;
         });
     }
 
-    const showRecommendations = (areaKey) => {
+    const parseDimensions = (notes, areaKey) => {
+        const fallback = areaDetails[areaKey] || areaDetails.jendela;
+        const match = (notes || '').toLowerCase().replace(/,/g, '.').match(/(\d+(?:\.\d+)?)\s*(cm|m)?\s*(?:x|×)\s*(\d+(?:\.\d+)?)\s*(cm|m)?/);
+        if (!match) return { widthCm: fallback.widthCm, heightCm: fallback.heightCm, source: 'standar' };
+
+        let width = parseFloat(match[1]);
+        let height = parseFloat(match[3]);
+        const unit = match[2] || match[4] || '';
+        const isMeter = unit === 'm' || (width <= 10 && height <= 10);
+        if (isMeter) {
+            width *= 100;
+            height *= 100;
+        }
+        return {
+            widthCm: Math.round(width),
+            heightCm: Math.round(height),
+            source: 'catatan'
+        };
+    };
+
+    const calculateAIEstimate = (areaKey, styleKey, notes) => {
+        const area = areaDetails[areaKey] || areaDetails.jendela;
+        const style = aiStyles[styleKey] || aiStyles.minimalis;
+        const dimensions = parseDimensions(notes, areaKey);
+        const luas = Math.max((dimensions.widthCm / 100) * (dimensions.heightCm / 100), 0.85);
+        const installFee = areaKey === 'balkon' ? 350000 : 250000;
+        const total = Math.round(((luas * style.pricePerM2 * area.multiplier) + installFee) / 50000) * 50000;
+        return {
+            total,
+            dimensions,
+            detail: `${dimensions.source === 'catatan' ? 'Ukuran dari catatan' : 'Ukuran standar'} ${dimensions.widthCm}x${dimensions.heightCm}cm, ${style.material}, finishing ${style.finish}.`
+        };
+    };
+
+    const analyzeImage = (img) => {
+        const sample = document.createElement('canvas');
+        const sampleWidth = 48;
+        sample.width = sampleWidth;
+        sample.height = Math.max(1, Math.round(sampleWidth * (img.height / img.width)));
+        const ctx = sample.getContext('2d', { willReadFrequently: true });
+        ctx.drawImage(img, 0, 0, sample.width, sample.height);
+
+        const pixels = ctx.getImageData(0, 0, sample.width, sample.height).data;
+        let r = 0;
+        let g = 0;
+        let b = 0;
+        let count = 0;
+        for (let i = 0; i < pixels.length; i += 16) {
+            r += pixels[i];
+            g += pixels[i + 1];
+            b += pixels[i + 2];
+            count += 1;
+        }
+        r = Math.round(r / count);
+        g = Math.round(g / count);
+        b = Math.round(b / count);
+
+        const max = Math.max(r, g, b);
+        const min = Math.min(r, g, b);
+        const brightness = Math.round((r * 0.299) + (g * 0.587) + (b * 0.114));
+        const saturation = max === 0 ? 0 : (max - min) / max;
+        const tone = brightness > 178 ? 'terang' : brightness < 92 ? 'gelap' : 'netral';
+        const colorLabel = saturation < 0.14
+            ? (brightness > 165 ? 'putih / abu terang' : 'abu / gelap')
+            : (r > g && r > b ? 'hangat' : b > r && b > g ? 'sejuk' : 'natural');
+        const ratio = img.width / img.height;
+        const shape = ratio > 1.18 ? 'melebar' : ratio < 0.82 ? 'tinggi' : 'seimbang';
+
+        return { brightness, tone, colorLabel, shape };
+    };
+
+    const roundedRectPath = (ctx, x, y, width, height, radius) => {
+        const r = Math.min(radius, width / 2, height / 2);
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.lineTo(x + width - r, y);
+        ctx.quadraticCurveTo(x + width, y, x + width, y + r);
+        ctx.lineTo(x + width, y + height - r);
+        ctx.quadraticCurveTo(x + width, y + height, x + width - r, y + height);
+        ctx.lineTo(x + r, y + height);
+        ctx.quadraticCurveTo(x, y + height, x, y + height - r);
+        ctx.lineTo(x, y + r);
+        ctx.quadraticCurveTo(x, y, x + r, y);
+        ctx.closePath();
+    };
+
+    const strokePathTwice = (ctx, drawPath, width, color = '#070809') => {
+        ctx.save();
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.strokeStyle = 'rgba(0,0,0,0.42)';
+        ctx.lineWidth = width + 5;
+        drawPath();
+        ctx.stroke();
+        ctx.strokeStyle = color;
+        ctx.lineWidth = width;
+        drawPath();
+        ctx.stroke();
+        ctx.restore();
+    };
+
+    const drawLine = (ctx, x1, y1, x2, y2, width, color) => {
+        strokePathTwice(ctx, () => {
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+        }, width, color);
+    };
+
+    const drawStar = (ctx, cx, cy, radius, width, color) => {
+        strokePathTwice(ctx, () => {
+            ctx.beginPath();
+            for (let i = 0; i < 16; i += 1) {
+                const angle = (Math.PI / 8) * i - Math.PI / 2;
+                const pointRadius = i % 2 === 0 ? radius : radius * 0.42;
+                const x = cx + Math.cos(angle) * pointRadius;
+                const y = cy + Math.sin(angle) * pointRadius;
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.closePath();
+        }, width, color);
+    };
+
+    const getDesignRect = (canvas, areaKey) => {
+        const w = canvas.width;
+        const h = canvas.height;
+        if (areaKey === 'pintu') {
+            return { x: w * 0.29, y: h * 0.11, w: w * 0.42, h: h * 0.78 };
+        }
+        if (areaKey === 'balkon') {
+            return { x: w * 0.1, y: h * 0.42, w: w * 0.8, h: h * 0.38 };
+        }
+        return { x: w * 0.16, y: h * 0.16, w: w * 0.68, h: h * 0.66 };
+    };
+
+    const drawFrame = (ctx, rect, barWidth, color) => {
+        strokePathTwice(ctx, () => roundedRectPath(ctx, rect.x, rect.y, rect.w, rect.h, Math.max(10, barWidth * 1.5)), barWidth * 1.35, color);
+        drawLine(ctx, rect.x + barWidth, rect.y + rect.h * 0.5, rect.x + rect.w - barWidth, rect.y + rect.h * 0.5, Math.max(2, barWidth * 0.58), color);
+    };
+
+    const drawMinimalis = (ctx, rect, barWidth, color) => {
+        const bars = Math.max(4, Math.round(rect.w / 78));
+        for (let i = 1; i < bars; i += 1) {
+            const x = rect.x + (rect.w / bars) * i;
+            drawLine(ctx, x, rect.y + barWidth, x, rect.y + rect.h - barWidth, barWidth * 0.72, color);
+        }
+    };
+
+    const drawIndustrial = (ctx, rect, barWidth, color) => {
+        const cols = Math.max(4, Math.round(rect.w / 92));
+        const rows = Math.max(3, Math.round(rect.h / 92));
+        for (let i = 1; i < cols; i += 1) {
+            const x = rect.x + (rect.w / cols) * i;
+            drawLine(ctx, x, rect.y + barWidth, x, rect.y + rect.h - barWidth, barWidth * 0.54, color);
+        }
+        for (let i = 1; i < rows; i += 1) {
+            const y = rect.y + (rect.h / rows) * i;
+            drawLine(ctx, rect.x + barWidth, y, rect.x + rect.w - barWidth, y, barWidth * 0.54, color);
+        }
+        drawLine(ctx, rect.x + barWidth * 2, rect.y + barWidth * 2, rect.x + rect.w - barWidth * 2, rect.y + rect.h - barWidth * 2, barWidth * 0.45, color);
+        drawLine(ctx, rect.x + rect.w - barWidth * 2, rect.y + barWidth * 2, rect.x + barWidth * 2, rect.y + rect.h - barWidth * 2, barWidth * 0.45, color);
+    };
+
+    const drawMewah = (ctx, rect, barWidth, color) => {
+        const gold = '#C59B4B';
+        drawMinimalis(ctx, rect, barWidth * 0.9, color);
+        const bays = 4;
+        for (let i = 0; i < bays; i += 1) {
+            const x1 = rect.x + (rect.w / bays) * i + barWidth;
+            const x2 = rect.x + (rect.w / bays) * (i + 1) - barWidth;
+            const mid = (x1 + x2) / 2;
+            strokePathTwice(ctx, () => {
+                ctx.beginPath();
+                ctx.moveTo(x1, rect.y + rect.h * 0.35);
+                ctx.quadraticCurveTo(mid, rect.y + rect.h * 0.18, x2, rect.y + rect.h * 0.35);
+            }, barWidth * 0.38, color);
+            drawStar(ctx, mid, rect.y + rect.h * 0.68, Math.min(rect.w, rect.h) * 0.035, barWidth * 0.28, gold);
+        }
+    };
+
+    const drawKlasik = (ctx, rect, barWidth, color) => {
+        drawMinimalis(ctx, rect, barWidth * 0.85, color);
+        const centerY = rect.y + rect.h * 0.54;
+        for (let i = 0; i < 4; i += 1) {
+            const cx = rect.x + rect.w * (0.2 + i * 0.2);
+            strokePathTwice(ctx, () => {
+                ctx.beginPath();
+                ctx.moveTo(cx, centerY);
+                ctx.bezierCurveTo(cx - rect.w * 0.08, centerY - rect.h * 0.18, cx + rect.w * 0.08, centerY - rect.h * 0.18, cx, centerY);
+                ctx.bezierCurveTo(cx + rect.w * 0.08, centerY + rect.h * 0.18, cx - rect.w * 0.08, centerY + rect.h * 0.18, cx, centerY);
+            }, barWidth * 0.38, color);
+        }
+    };
+
+    const drawIslami = (ctx, rect, barWidth, color) => {
+        const cols = Math.max(3, Math.round(rect.w / 120));
+        const rows = Math.max(2, Math.round(rect.h / 120));
+        for (let i = 1; i < cols; i += 1) {
+            const x = rect.x + (rect.w / cols) * i;
+            drawLine(ctx, x, rect.y + barWidth, x, rect.y + rect.h - barWidth, barWidth * 0.48, color);
+        }
+        for (let i = 1; i < rows; i += 1) {
+            const y = rect.y + (rect.h / rows) * i;
+            drawLine(ctx, rect.x + barWidth, y, rect.x + rect.w - barWidth, y, barWidth * 0.48, color);
+        }
+        for (let row = 0; row < rows; row += 1) {
+            for (let col = 0; col < cols; col += 1) {
+                const cx = rect.x + (rect.w / cols) * (col + 0.5);
+                const cy = rect.y + (rect.h / rows) * (row + 0.5);
+                drawStar(ctx, cx, cy, Math.min(rect.w / cols, rect.h / rows) * 0.24, barWidth * 0.32, color);
+            }
+        }
+    };
+
+    const drawTeraliMockup = (ctx, canvas, areaKey, styleKey) => {
+        const rect = getDesignRect(canvas, areaKey);
+        const color = '#08090b';
+        const barWidth = Math.max(5, Math.min(rect.w, rect.h) * 0.022);
+
+        ctx.save();
+        ctx.fillStyle = 'rgba(0,0,0,0.12)';
+        roundedRectPath(ctx, rect.x - barWidth, rect.y - barWidth, rect.w + barWidth * 2, rect.h + barWidth * 2, barWidth * 2);
+        ctx.fill();
+        ctx.restore();
+
+        drawFrame(ctx, rect, barWidth, color);
+
+        if (styleKey === 'industrial') drawIndustrial(ctx, rect, barWidth, color);
+        else if (styleKey === 'mewah') drawMewah(ctx, rect, barWidth, color);
+        else if (styleKey === 'klasik') drawKlasik(ctx, rect, barWidth, color);
+        else if (styleKey === 'islami') drawIslami(ctx, rect, barWidth, color);
+        else drawMinimalis(ctx, rect, barWidth, color);
+    };
+
+    const generateAIMockup = async (source, areaKey, styleKey) => {
+        const img = await loadImageFromSrc(source);
+        const maxWidth = 1100;
+        const scale = Math.min(1, maxWidth / img.width);
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.max(320, Math.round(img.width * scale));
+        canvas.height = Math.max(240, Math.round(img.height * scale));
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = 'rgba(5, 6, 8, 0.04)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        drawTeraliMockup(ctx, canvas, areaKey, styleKey);
+        return {
+            dataUrl: canvas.toDataURL('image/png'),
+            analysis: analyzeImage(img)
+        };
+    };
+
+    const buildPrompt = (areaKey, styleKey, analysis, notes) => {
+        const area = (areaDetails[areaKey] || areaDetails.jendela).label.toLowerCase();
+        const style = aiStyles[styleKey] || aiStyles.minimalis;
+        const notePart = notes ? ` Client note: ${notes.trim()}.` : '';
+        return `Generate ${style.promptTone} for this ${area}, aligned to the existing ${analysis.shape} opening, matching the ${analysis.tone} ${analysis.colorLabel} house color, realistic before-after product mockup.${notePart}`;
+    };
+
+    const renderAnalysisChips = (areaKey, styleKey, analysis) => {
+        if (!aiAnalysis) return;
+        const area = areaDetails[areaKey] || areaDetails.jendela;
+        const style = aiStyles[styleKey] || aiStyles.minimalis;
+        const chips = [
+            ['Area', area.label],
+            ['Style', style.label],
+            ['Warna Foto', analysis.colorLabel],
+            ['Bentuk', analysis.shape]
+        ];
+        aiAnalysis.innerHTML = chips.map(([label, value]) => `
+            <div class="ai-chip">
+                <span>${label}</span>
+                <strong>${value}</strong>
+            </div>
+        `).join('');
+    };
+
+    const showRecommendations = (areaKey, styleKey) => {
         const rec = recommendations[areaKey];
         if (!rec || !recProducts) return;
-        recAreaLabel.textContent = rec.label;
+        const style = aiStyles[styleKey] || aiStyles.minimalis;
+        recAreaLabel.textContent = `${rec.label} dengan style ${style.label}`;
         const matched = rec.ids.map(id => products.find(p => p.id === id)).filter(Boolean);
         recProducts.innerHTML = matched.map(p => `
             <div class="rec-product-card">
@@ -374,29 +724,85 @@ if (dropzone) {
         requestAnimationFrame(() => recResult.scrollIntoView({ behavior: 'smooth', block: 'nearest' }));
     };
 
+    const renderAIDesign = async () => {
+        const notes = uploadNotes ? uploadNotes.value : '';
+        const generated = await generateAIMockup(previewImg.src, selectedArea, selectedStyle);
+        const prompt = buildPrompt(selectedArea, selectedStyle, generated.analysis, notes);
+        const estimate = calculateAIEstimate(selectedArea, selectedStyle, notes);
+        const area = areaDetails[selectedArea] || areaDetails.jendela;
+        const style = aiStyles[selectedStyle] || aiStyles.minimalis;
+        const waText = [
+            'Halo Hidayat Teknik, saya ingin konsultasi desain AI terali.',
+            `Area: ${area.label}`,
+            `Style: ${style.label}`,
+            `Estimasi: ${formatIDR(estimate.total)}`,
+            `Detail: ${estimate.detail}`,
+            `Prompt: ${prompt}`
+        ].join('\n');
+
+        latestAIPreview = generated.dataUrl;
+        if (aiBeforeImg) aiBeforeImg.src = previewImg.src;
+        if (aiAfterImg) aiAfterImg.src = generated.dataUrl;
+        if (aiPromptText) aiPromptText.textContent = prompt;
+        if (aiEstimatePrice) aiEstimatePrice.textContent = formatIDR(estimate.total);
+        if (aiEstimateDetail) aiEstimateDetail.textContent = estimate.detail;
+        if (aiWhatsappLink) aiWhatsappLink.href = `https://wa.me/6281234567890?text=${encodeURIComponent(waText)}`;
+        renderAnalysisChips(selectedArea, selectedStyle, generated.analysis);
+        showRecommendations(selectedArea, selectedStyle);
+
+        return { prompt, estimate };
+    };
+
+    if (aiDownloadBtn) {
+        aiDownloadBtn.addEventListener('click', () => {
+            if (!latestAIPreview) return;
+            const link = document.createElement('a');
+            link.href = latestAIPreview;
+            link.download = `hidayat-teknik-ai-${selectedArea || 'terali'}-${selectedStyle || 'style'}.png`;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        });
+    }
+
     if (uploadSubmit) {
         uploadSubmit.addEventListener('click', async () => {
             if (!uploadedFile || !selectedArea) return;
             recIdle.style.display    = 'none';
             recResult.style.display  = 'none';
             recLoading.style.display = 'flex';
+            uploadSubmit.disabled = true;
 
-            // Simulasi analisis 1.8 detik
-            setTimeout(() => {
+            try {
+                await sleep(700);
+                const aiResult = await renderAIDesign();
                 recLoading.style.display = 'none';
-                showRecommendations(selectedArea);
-            }, 1800);
+                validateUpload();
 
-            // Simpan ke Supabase (non-blocking)
-            const recIds = (recommendations[selectedArea]?.ids) || [];
-            const notesEl = $('upload-notes');
-            if (typeof db !== 'undefined' && db.isConfigured()) {
-                db.savePhotoRequest({
-                    areaType:       selectedArea,
-                    file:           uploadedFile,
-                    notes:          notesEl ? notesEl.value : '',
-                    recommendedIds: recIds
-                });
+                // Simpan ke Supabase (non-blocking)
+                const recIds = (recommendations[selectedArea]?.ids) || [];
+                const baseNotes = uploadNotes ? uploadNotes.value.trim() : '';
+                const aiNotes = [
+                    baseNotes,
+                    `AI Style: ${(aiStyles[selectedStyle] || aiStyles.minimalis).label}`,
+                    `AI Prompt: ${aiResult.prompt}`,
+                    `Estimasi: ${formatIDR(aiResult.estimate.total)} - ${aiResult.estimate.detail}`
+                ].filter(Boolean).join('\n');
+                if (typeof db !== 'undefined' && db.isConfigured()) {
+                    db.savePhotoRequest({
+                        areaType:       selectedArea,
+                        file:           uploadedFile,
+                        notes:          aiNotes,
+                        recommendedIds: recIds
+                    });
+                }
+            } catch (err) {
+                console.error('[AI Mockup] Failed to generate preview:', err);
+                recLoading.style.display = 'none';
+                if (recIdle) recIdle.style.display = 'flex';
+                validateUpload();
+                if (typeof showToast !== 'undefined') showToast('Gagal membuat preview. Coba foto lain.', 'error');
+                else alert('Gagal membuat preview. Coba foto lain.');
             }
         });
     }
