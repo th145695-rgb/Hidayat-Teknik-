@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "api/generate-ai-design.js": {
+      "maxDuration": 60
+    }
+  }
+}

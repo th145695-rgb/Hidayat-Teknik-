@@ -304,6 +304,7 @@ const aiEstimatePrice = $('ai-estimate-price');
 const aiEstimateDetail = $('ai-estimate-detail');
 const aiDownloadBtn   = $('download-ai-preview');
 const aiWhatsappLink  = $('ai-whatsapp-link');
+const aiProviderLabel = $('ai-provider-label');
 
 const recommendations = {
     jendela: { label: 'Berdasarkan foto jendela yang Anda upload',  ids: [1, 2, 4] },
@@ -369,6 +370,46 @@ if (dropzone) {
         img.onerror = reject;
         img.src = src;
     });
+
+    const prepareImageForBackend = async (source) => {
+        const img = await loadImageFromSrc(source);
+        const maxSide = 1536;
+        const scale = Math.min(1, maxSide / Math.max(img.width, img.height));
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.max(320, Math.round(img.width * scale));
+        canvas.height = Math.max(240, Math.round(img.height * scale));
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        return canvas.toDataURL('image/jpeg', 0.88);
+    };
+
+    const generateWithOpenAIBackend = async ({ source, areaKey, styleKey, notes, prompt, analysis }) => {
+        const imageDataUrl = await prepareImageForBackend(source);
+        const response = await fetch('/api/generate-ai-design', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                imageDataUrl,
+                areaType: areaKey,
+                style: styleKey,
+                notes,
+                prompt,
+                analysis
+            })
+        });
+
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok || !payload.success || !payload.imageDataUrl) {
+            const err = new Error(payload.error || 'AI backend belum bisa generate gambar.');
+            err.code = payload.code || 'AI_BACKEND_ERROR';
+            err.requestId = payload.requestId;
+            throw err;
+        }
+
+        return payload;
+    };
 
     const validateUpload = () => {
         if (uploadSubmit) uploadSubmit.disabled = !(uploadedFile && selectedArea && selectedStyle);
@@ -925,11 +966,38 @@ if (dropzone) {
 
     const renderAIDesign = async () => {
         const notes = uploadNotes ? uploadNotes.value : '';
-        const generated = await generateAIMockup(previewImg.src, selectedArea, selectedStyle);
-        const prompt = buildPrompt(selectedArea, selectedStyle, generated.analysis, notes);
+        const sourceImage = await loadImageFromSrc(previewImg.src);
+        const analysis = analyzeImage(sourceImage);
+        let prompt = buildPrompt(selectedArea, selectedStyle, analysis, notes);
         const estimate = calculateAIEstimate(selectedArea, selectedStyle, notes);
         const area = areaDetails[selectedArea] || areaDetails.jendela;
         const style = aiStyles[selectedStyle] || aiStyles.minimalis;
+        let designDataUrl = null;
+        let provider = 'openai';
+        let providerLabel = 'OpenAI Image API';
+
+        try {
+            const aiDesign = await generateWithOpenAIBackend({
+                source: previewImg.src,
+                areaKey: selectedArea,
+                styleKey: selectedStyle,
+                notes,
+                prompt,
+                analysis
+            });
+            designDataUrl = aiDesign.imageDataUrl;
+            prompt = aiDesign.prompt || prompt;
+        } catch (err) {
+            console.warn('[AI Backend] Falling back to local preview:', err.message);
+            const fallback = await generateAIMockup(previewImg.src, selectedArea, selectedStyle);
+            designDataUrl = fallback.dataUrl;
+            provider = 'local';
+            providerLabel = err.code === 'OPENAI_API_KEY_MISSING' ? 'Preview sementara' : 'Fallback lokal';
+            if (typeof showToast !== 'undefined') {
+                showToast('AI backend belum aktif, memakai preview sementara.', 'info');
+            }
+        }
+
         const waText = [
             'Halo Hidayat Teknik, saya ingin konsultasi desain AI terali.',
             `Area: ${area.label}`,
@@ -939,17 +1007,18 @@ if (dropzone) {
             `Prompt: ${prompt}`
         ].join('\n');
 
-        latestAIPreview = generated.dataUrl;
+        latestAIPreview = designDataUrl;
         if (aiBeforeImg) aiBeforeImg.src = previewImg.src;
-        if (aiAfterImg) aiAfterImg.src = generated.dataUrl;
+        if (aiAfterImg) aiAfterImg.src = designDataUrl;
+        if (aiProviderLabel) aiProviderLabel.textContent = providerLabel;
         if (aiPromptText) aiPromptText.textContent = prompt;
         if (aiEstimatePrice) aiEstimatePrice.textContent = formatIDR(estimate.total);
         if (aiEstimateDetail) aiEstimateDetail.textContent = estimate.detail;
         if (aiWhatsappLink) aiWhatsappLink.href = `https://wa.me/6281234567890?text=${encodeURIComponent(waText)}`;
-        renderAnalysisChips(selectedArea, selectedStyle, generated.analysis);
+        renderAnalysisChips(selectedArea, selectedStyle, analysis);
         showRecommendations(selectedArea, selectedStyle);
 
-        return { prompt, estimate };
+        return { prompt, estimate, provider };
     };
 
     if (aiDownloadBtn) {
@@ -983,6 +1052,7 @@ if (dropzone) {
                 const baseNotes = uploadNotes ? uploadNotes.value.trim() : '';
                 const aiNotes = [
                     baseNotes,
+                    `AI Engine: ${aiResult.provider === 'openai' ? 'OpenAI Image API' : 'Preview sementara lokal'}`,
                     `AI Style: ${(aiStyles[selectedStyle] || aiStyles.minimalis).label}`,
                     `AI Prompt: ${aiResult.prompt}`,
                     `Estimasi: ${formatIDR(aiResult.estimate.total)} - ${aiResult.estimate.detail}`
