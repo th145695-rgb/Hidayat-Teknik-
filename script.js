@@ -547,7 +547,7 @@ if (dropzone) {
         }, width, color);
     };
 
-    const getDesignRect = (canvas, areaKey) => {
+    const getFallbackDesignRect = (canvas, areaKey) => {
         const w = canvas.width;
         const h = canvas.height;
         if (areaKey === 'pintu') {
@@ -556,7 +556,196 @@ if (dropzone) {
         if (areaKey === 'balkon') {
             return { x: w * 0.1, y: h * 0.42, w: w * 0.8, h: h * 0.38 };
         }
-        return { x: w * 0.16, y: h * 0.16, w: w * 0.68, h: h * 0.66 };
+        return { x: w * 0.22, y: h * 0.18, w: w * 0.56, h: h * 0.58 };
+    };
+
+    const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
+
+    const colorDistance = (a, b) => {
+        const dr = a.r - b.r;
+        const dg = a.g - b.g;
+        const db = a.b - b.b;
+        return Math.sqrt((dr * dr) + (dg * dg) + (db * db));
+    };
+
+    const getPixel = (data, width, x, y) => {
+        const i = ((y * width) + x) * 4;
+        return { r: data[i], g: data[i + 1], b: data[i + 2] };
+    };
+
+    const getSaturation = ({ r, g, b }) => {
+        const max = Math.max(r, g, b);
+        const min = Math.min(r, g, b);
+        return max === 0 ? 0 : (max - min) / max;
+    };
+
+    const getBrightness = ({ r, g, b }) => (r * 0.299) + (g * 0.587) + (b * 0.114);
+
+    const dilateMask = (mask, width, height, iterations = 1) => {
+        let current = mask;
+        for (let step = 0; step < iterations; step += 1) {
+            const next = current.slice();
+            for (let y = 1; y < height - 1; y += 1) {
+                for (let x = 1; x < width - 1; x += 1) {
+                    const idx = y * width + x;
+                    if (current[idx]) continue;
+                    if (
+                        current[idx - 1] || current[idx + 1] ||
+                        current[idx - width] || current[idx + width] ||
+                        current[idx - width - 1] || current[idx - width + 1] ||
+                        current[idx + width - 1] || current[idx + width + 1]
+                    ) {
+                        next[idx] = 1;
+                    }
+                }
+            }
+            current = next;
+        }
+        return current;
+    };
+
+    const detectMainOpeningRect = (sourceCanvas, areaKey) => {
+        const fallback = getFallbackDesignRect(sourceCanvas, areaKey);
+        const sample = document.createElement('canvas');
+        const sampleWidth = 180;
+        sample.width = sampleWidth;
+        sample.height = Math.max(90, Math.round(sampleWidth * (sourceCanvas.height / sourceCanvas.width)));
+        const ctx = sample.getContext('2d', { willReadFrequently: true });
+        ctx.drawImage(sourceCanvas, 0, 0, sample.width, sample.height);
+
+        const image = ctx.getImageData(0, 0, sample.width, sample.height);
+        const data = image.data;
+        const sw = sample.width;
+        const sh = sample.height;
+        const margin = Math.max(5, Math.round(Math.min(sw, sh) * 0.07));
+
+        let wall = { r: 0, g: 0, b: 0 };
+        let wallCount = 0;
+        for (let y = 0; y < sh; y += 1) {
+            for (let x = 0; x < sw; x += 1) {
+                if (x > margin && x < sw - margin && y > margin && y < sh - margin) continue;
+                const pixel = getPixel(data, sw, x, y);
+                wall.r += pixel.r;
+                wall.g += pixel.g;
+                wall.b += pixel.b;
+                wallCount += 1;
+            }
+        }
+        wall = {
+            r: wall.r / wallCount,
+            g: wall.g / wallCount,
+            b: wall.b / wallCount
+        };
+        const wallBrightness = getBrightness(wall);
+        const wallSaturation = getSaturation(wall);
+        const mask = new Uint8Array(sw * sh);
+
+        for (let y = margin; y < sh - margin; y += 1) {
+            for (let x = margin; x < sw - margin; x += 1) {
+                const pixel = getPixel(data, sw, x, y);
+                const right = getPixel(data, sw, Math.min(sw - 1, x + 1), y);
+                const down = getPixel(data, sw, x, Math.min(sh - 1, y + 1));
+                const diffWall = colorDistance(pixel, wall);
+                const edge = (colorDistance(pixel, right) + colorDistance(pixel, down)) / 2;
+                const saturation = getSaturation(pixel);
+                const brightness = getBrightness(pixel);
+                const isFeature =
+                    diffWall > 36 ||
+                    edge > 30 ||
+                    (saturation > wallSaturation + 0.08 && diffWall > 20) ||
+                    brightness < wallBrightness - 42;
+
+                if (isFeature) mask[y * sw + x] = 1;
+            }
+        }
+
+        const connectedMask = dilateMask(mask, sw, sh, 2);
+        const visited = new Uint8Array(sw * sh);
+        const components = [];
+
+        for (let start = 0; start < connectedMask.length; start += 1) {
+            if (!connectedMask[start] || visited[start]) continue;
+
+            const queue = [start];
+            visited[start] = 1;
+            let qi = 0;
+            let count = 0;
+            let minX = sw;
+            let maxX = 0;
+            let minY = sh;
+            let maxY = 0;
+
+            while (qi < queue.length) {
+                const idx = queue[qi];
+                qi += 1;
+                const x = idx % sw;
+                const y = Math.floor(idx / sw);
+                count += 1;
+                minX = Math.min(minX, x);
+                maxX = Math.max(maxX, x);
+                minY = Math.min(minY, y);
+                maxY = Math.max(maxY, y);
+
+                const neighbors = [idx - 1, idx + 1, idx - sw, idx + sw];
+                neighbors.forEach(next => {
+                    if (next < 0 || next >= connectedMask.length || visited[next] || !connectedMask[next]) return;
+                    const nx = next % sw;
+                    const ny = Math.floor(next / sw);
+                    if (Math.abs(nx - x) + Math.abs(ny - y) !== 1) return;
+                    visited[next] = 1;
+                    queue.push(next);
+                });
+            }
+
+            const rectW = maxX - minX + 1;
+            const rectH = maxY - minY + 1;
+            const rectArea = rectW * rectH;
+            const aspect = rectW / rectH;
+            const relativeArea = rectArea / (sw * sh);
+            const cx = (minX + maxX) / 2 / sw;
+            const cy = (minY + maxY) / 2 / sh;
+            const centerPenalty = Math.hypot(cx - 0.5, cy - 0.48);
+            const touchesOuterEdge = minX <= margin * 0.5 || maxX >= sw - margin * 0.5 ||
+                minY <= margin * 0.5 || maxY >= sh - margin * 0.5;
+
+            if (relativeArea < 0.025 || relativeArea > 0.72 || touchesOuterEdge) continue;
+            if (areaKey === 'jendela' && (aspect < 0.45 || aspect > 3.6)) continue;
+            if (areaKey === 'pintu' && (aspect < 0.22 || aspect > 1.25)) continue;
+            if (areaKey === 'balkon' && (aspect < 1.2 || aspect > 6)) continue;
+
+            components.push({
+                minX,
+                maxX,
+                minY,
+                maxY,
+                count,
+                score: count + (rectArea * 0.28) - (centerPenalty * sw * sh * 0.18)
+            });
+        }
+
+        if (!components.length) return fallback;
+
+        const best = components.sort((a, b) => b.score - a.score)[0];
+        const scaleX = sourceCanvas.width / sw;
+        const scaleY = sourceCanvas.height / sh;
+        const padX = Math.max(sourceCanvas.width * 0.012, (best.maxX - best.minX) * scaleX * 0.035);
+        const padY = Math.max(sourceCanvas.height * 0.012, (best.maxY - best.minY) * scaleY * 0.045);
+
+        const detected = {
+            x: (best.minX * scaleX) - padX,
+            y: (best.minY * scaleY) - padY,
+            w: ((best.maxX - best.minX + 1) * scaleX) + (padX * 2),
+            h: ((best.maxY - best.minY + 1) * scaleY) + (padY * 2)
+        };
+
+        detected.x = clamp(detected.x, sourceCanvas.width * 0.03, sourceCanvas.width * 0.94);
+        detected.y = clamp(detected.y, sourceCanvas.height * 0.03, sourceCanvas.height * 0.94);
+        detected.w = clamp(detected.w, sourceCanvas.width * 0.18, sourceCanvas.width * 0.86);
+        detected.h = clamp(detected.h, sourceCanvas.height * 0.18, sourceCanvas.height * 0.86);
+        if (detected.x + detected.w > sourceCanvas.width * 0.97) detected.w = (sourceCanvas.width * 0.97) - detected.x;
+        if (detected.y + detected.h > sourceCanvas.height * 0.97) detected.h = (sourceCanvas.height * 0.97) - detected.y;
+
+        return detected;
     };
 
     const drawFrame = (ctx, rect, barWidth, color) => {
@@ -638,8 +827,15 @@ if (dropzone) {
         }
     };
 
-    const drawTeraliMockup = (ctx, canvas, areaKey, styleKey) => {
-        const rect = getDesignRect(canvas, areaKey);
+    const drawTeraliMockup = (ctx, canvas, areaKey, styleKey, detectedRect = null) => {
+        const baseRect = detectedRect || getFallbackDesignRect(canvas, areaKey);
+        const inset = Math.max(4, Math.min(baseRect.w, baseRect.h) * 0.025);
+        const rect = {
+            x: baseRect.x + inset,
+            y: baseRect.y + inset,
+            w: baseRect.w - (inset * 2),
+            h: baseRect.h - (inset * 2)
+        };
         const color = '#08090b';
         const barWidth = Math.max(5, Math.min(rect.w, rect.h) * 0.022);
 
@@ -667,9 +863,10 @@ if (dropzone) {
         canvas.height = Math.max(240, Math.round(img.height * scale));
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        const detectedRect = detectMainOpeningRect(canvas, areaKey);
         ctx.fillStyle = 'rgba(5, 6, 8, 0.04)';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-        drawTeraliMockup(ctx, canvas, areaKey, styleKey);
+        drawTeraliMockup(ctx, canvas, areaKey, styleKey, detectedRect);
         return {
             dataUrl: canvas.toDataURL('image/png'),
             analysis: analyzeImage(img)
