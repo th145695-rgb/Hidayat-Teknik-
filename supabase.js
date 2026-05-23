@@ -203,6 +203,57 @@ const db = {
     },
 
     // ------------------------------------------
+    // PRODUCTS: Tambah Produk Baru (Admin)
+    // ------------------------------------------
+    addProduct: async ({ title, category, price, file }) => {
+        const toast = showToast('Mengupload produk...', 'loading');
+        try {
+            let imageUrl = null;
+            if (file) {
+                const ext = file.name.split('.').pop();
+                const filename = `product_${Date.now()}.${ext}`;
+                const { data: storageData, error: storageError } = await supabaseClient
+                    .storage
+                    .from('product-images')
+                    .upload(filename, file, { cacheControl: '3600', upsert: false });
+
+                if (storageError) throw storageError;
+                
+                const { data: urlData } = supabaseClient.storage.from('product-images').getPublicUrl(storageData.path);
+                imageUrl = urlData.publicUrl;
+            }
+
+            const categoryLabels = {
+                'jendela': 'Jendela',
+                'pintu': 'Pintu Utama',
+                'klasik': 'Klasik',
+                'modern': 'Modern'
+            };
+
+            const { data, error } = await supabaseClient
+                .from('products')
+                .insert([{
+                    title: title,
+                    category: category,
+                    category_label: categoryLabels[category] || 'Lainnya',
+                    price: price,
+                    image_url: imageUrl || 'assets/images/minimalist_window_trellis_1779491829216.png',
+                    is_active: true
+                }]);
+
+            toast.remove();
+            if (error) throw error;
+            showToast('Produk berhasil ditambahkan!', 'success');
+            return { success: true };
+        } catch (err) {
+            toast.remove();
+            showToast('Gagal menambahkan produk: ' + err.message, 'error');
+            console.error('[DB] Add product error:', err.message);
+            return { success: false, error: err.message };
+        }
+    },
+
+    // ------------------------------------------
     // PRODUCTS: Ambil produk dari database
     // ------------------------------------------
     fetchProducts: async () => {
