@@ -95,8 +95,8 @@ const db = {
     // ------------------------------------------
     // PHOTO REQUEST: Simpan permintaan rekomendasi
     // ------------------------------------------
-    savePhotoRequest: async ({ areaType, file, notes, recommendedIds }) => {
-        const toast = showToast('Mengunggah foto...', 'loading');
+    savePhotoRequest: async ({ areaType, file, notes, recommendedIds, silent = false }) => {
+        const toast = silent ? null : showToast('Mengunggah foto...', 'loading');
         try {
             let photoUrl = null;
 
@@ -133,15 +133,15 @@ const db = {
                 .select()
                 .single();
 
-            toast.remove();
+            if (toast) toast.remove();
             if (error) throw error;
 
-            showToast('Permintaan rekomendasi berhasil dikirim!', 'success');
+            if (!silent) showToast('Permintaan rekomendasi berhasil dikirim!', 'success');
             console.log('[DB] Photo request saved:', data);
             return { success: true, data };
         } catch (err) {
-            toast.remove();
-            showToast('Gagal mengirim permintaan. Coba lagi.', 'error');
+            if (toast) toast.remove();
+            if (!silent) showToast('Gagal mengirim permintaan. Coba lagi.', 'error');
             console.error('[DB] Photo request error:', err.message);
             return { success: false, error: err.message };
         }

@@ -721,7 +721,9 @@ if (dropzone) {
             </div>
         `).join('');
         recResult.style.display = 'flex';
-        requestAnimationFrame(() => recResult.scrollIntoView({ behavior: 'smooth', block: 'nearest' }));
+        if (window.matchMedia('(max-width: 992px)').matches) {
+            requestAnimationFrame(() => recResult.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+        }
     };
 
     const renderAIDesign = async () => {
@@ -793,7 +795,8 @@ if (dropzone) {
                         areaType:       selectedArea,
                         file:           uploadedFile,
                         notes:          aiNotes,
-                        recommendedIds: recIds
+                        recommendedIds: recIds,
+                        silent:         true
                     });
                 }
             } catch (err) {
