@@ -495,7 +495,7 @@ if (bookingDate) {
         sumBookingId.textContent = bookingId;
 
         const msg = encodeURIComponent(
-            `Halo BesiKraf! 👋\n\nSaya ingin konfirmasi booking survey:\n` +
+            `Halo Hidayat Teknik! 👋\n\nSaya ingin konfirmasi booking survey:\n` +
             `📋 No. Booking: ${bookingId}\n📅 Tanggal: ${dateFmt}\n🕐 Jam: ${slotLabel}\n` +
             `👤 Nama: ${bookName.value.trim()}\n📞 HP: ${bookPhone.value.trim()}\n` +
             `📍 Alamat: ${bookAddress.value.trim()}, ${bookCity.value.trim()}\n🏠 Area: ${areaLabel}\n` +
