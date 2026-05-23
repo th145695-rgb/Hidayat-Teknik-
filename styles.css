@@ -1022,6 +1022,14 @@ ul {
     border-color: rgba(212, 175, 55, 0.35);
 }
 
+.ai-preview-generated.ai-unavailable {
+    border-color: rgba(231, 76, 60, 0.45);
+}
+
+.ai-preview-generated.ai-unavailable img {
+    filter: grayscale(0.2) brightness(0.78);
+}
+
 .ai-preview-generated small {
     position: absolute;
     right: 0.65rem;
@@ -1033,6 +1041,34 @@ ul {
     color: var(--primary-color);
     font-size: 0.68rem;
     font-weight: 600;
+}
+
+.ai-backend-warning {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.8rem;
+    border: 1px solid rgba(231, 76, 60, 0.42);
+    border-radius: 8px;
+    background: rgba(231, 76, 60, 0.08);
+    padding: 0.9rem 1rem;
+}
+
+.ai-backend-warning i {
+    color: #ff6b5f;
+    margin-top: 0.15rem;
+}
+
+.ai-backend-warning strong {
+    display: block;
+    margin-bottom: 0.2rem;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+}
+
+.ai-backend-warning p {
+    color: var(--text-secondary);
+    font-size: 0.84rem;
+    line-height: 1.45;
 }
 
 .ai-analysis {

@@ -305,6 +305,9 @@ const aiEstimateDetail = $('ai-estimate-detail');
 const aiDownloadBtn   = $('download-ai-preview');
 const aiWhatsappLink  = $('ai-whatsapp-link');
 const aiProviderLabel = $('ai-provider-label');
+const aiBackendWarning = $('ai-backend-warning');
+const aiBackendWarningText = $('ai-backend-warning-text');
+const aiGeneratedCard = document.querySelector('.ai-preview-generated');
 
 const recommendations = {
     jendela: { label: 'Berdasarkan foto jendela yang Anda upload',  ids: [1, 2, 4] },
@@ -460,6 +463,9 @@ if (dropzone) {
             if (recIdle)    recIdle.style.display    = 'flex';
             if (aiBeforeImg) aiBeforeImg.src = '';
             if (aiAfterImg) aiAfterImg.src = '';
+            if (aiBackendWarning) aiBackendWarning.style.display = 'none';
+            if (aiGeneratedCard) aiGeneratedCard.classList.remove('ai-unavailable');
+            if (aiDownloadBtn) aiDownloadBtn.disabled = false;
             latestAIPreview = null;
         });
     }
@@ -988,13 +994,16 @@ if (dropzone) {
             designDataUrl = aiDesign.imageDataUrl;
             prompt = aiDesign.prompt || prompt;
         } catch (err) {
-            console.warn('[AI Backend] Falling back to local preview:', err.message);
-            const fallback = await generateAIMockup(previewImg.src, selectedArea, selectedStyle);
-            designDataUrl = fallback.dataUrl;
-            provider = 'local';
-            providerLabel = err.code === 'OPENAI_API_KEY_MISSING' ? 'Preview sementara' : 'Fallback lokal';
+            console.warn('[AI Backend] OpenAI image generation unavailable:', err.message);
+            designDataUrl = previewImg.src;
+            provider = 'unavailable';
+            providerLabel = 'OpenAI belum aktif';
+            const helpText = err.code === 'OPENAI_API_KEY_MISSING'
+                ? 'OPENAI_API_KEY belum terpasang di Vercel, jadi gambar OpenAI belum bisa dibuat.'
+                : `OpenAI backend gagal dipanggil: ${err.message}`;
+            if (aiBackendWarningText) aiBackendWarningText.textContent = helpText;
             if (typeof showToast !== 'undefined') {
-                showToast('AI backend belum aktif, memakai preview sementara.', 'info');
+                showToast('OpenAI backend belum aktif. Hasil AI belum dibuat.', 'info');
             }
         }
 
@@ -1007,10 +1016,13 @@ if (dropzone) {
             `Prompt: ${prompt}`
         ].join('\n');
 
-        latestAIPreview = designDataUrl;
+        latestAIPreview = provider === 'openai' ? designDataUrl : null;
         if (aiBeforeImg) aiBeforeImg.src = previewImg.src;
         if (aiAfterImg) aiAfterImg.src = designDataUrl;
         if (aiProviderLabel) aiProviderLabel.textContent = providerLabel;
+        if (aiBackendWarning) aiBackendWarning.style.display = provider === 'openai' ? 'none' : 'flex';
+        if (aiGeneratedCard) aiGeneratedCard.classList.toggle('ai-unavailable', provider !== 'openai');
+        if (aiDownloadBtn) aiDownloadBtn.disabled = provider !== 'openai';
         if (aiPromptText) aiPromptText.textContent = prompt;
         if (aiEstimatePrice) aiEstimatePrice.textContent = formatIDR(estimate.total);
         if (aiEstimateDetail) aiEstimateDetail.textContent = estimate.detail;
@@ -1023,7 +1035,10 @@ if (dropzone) {
 
     if (aiDownloadBtn) {
         aiDownloadBtn.addEventListener('click', () => {
-            if (!latestAIPreview) return;
+            if (!latestAIPreview) {
+                if (typeof showToast !== 'undefined') showToast('Preview OpenAI belum tersedia untuk didownload.', 'info');
+                return;
+            }
             const link = document.createElement('a');
             link.href = latestAIPreview;
             link.download = `hidayat-teknik-ai-${selectedArea || 'terali'}-${selectedStyle || 'style'}.png`;
@@ -1052,7 +1067,7 @@ if (dropzone) {
                 const baseNotes = uploadNotes ? uploadNotes.value.trim() : '';
                 const aiNotes = [
                     baseNotes,
-                    `AI Engine: ${aiResult.provider === 'openai' ? 'OpenAI Image API' : 'Preview sementara lokal'}`,
+                    `AI Engine: ${aiResult.provider === 'openai' ? 'OpenAI Image API' : 'OpenAI belum aktif'}`,
                     `AI Style: ${(aiStyles[selectedStyle] || aiStyles.minimalis).label}`,
                     `AI Prompt: ${aiResult.prompt}`,
                     `Estimasi: ${formatIDR(aiResult.estimate.total)} - ${aiResult.estimate.detail}`
