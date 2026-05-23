@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="BesiKraf - Booking survey rumah. Pilih tanggal, jam, dan alamat untuk kunjungan tim ahli kami.">
+    <title>BesiKraf | Booking Survey</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo"><a href="index.html" style="color:inherit;text-decoration:none"><i class="fa-solid fa-layer-group"></i> BesiKraf.</a></div>
+        <ul class="nav-links">
+            <li><a href="index.html">Beranda</a></li>
+            <li><a href="katalog.html">Katalog</a></li>
+            <li><a href="custom.html">Custom Desain</a></li>
+            <li><a href="upload.html">Upload Foto</a></li>
+            <li><a href="booking.html" class="active">Booking Survey</a></li>
+        </ul>
+        <div class="nav-actions">
+            <button class="icon-btn cart-btn" aria-label="Cart">
+                <i class="fa-solid fa-shopping-cart"></i>
+                <span class="cart-count">0</span>
+            </button>
+        </div>
+    </nav>
+
+    <div class="page-hero-small">
+        <span class="badge">Gratis Kunjungan</span>
+        <h1>Booking Survey Rumah</h1>
+        <p>Tim profesional kami siap datang langsung ke lokasi Anda untuk mengukur dan memberikan rekomendasi terbaik — gratis!</p>
+    </div>
+
+    <section class="booking-section" style="padding-top:2rem">
+        <div class="booking-wrapper">
+            <div class="booking-form-panel glass-upload">
+                <div class="booking-step">
+                    <h3><span class="step-badge">1</span> Pilih Tanggal</h3>
+                    <input type="date" id="booking-date" class="booking-date-input" min="">
+                </div>
+
+                <div class="booking-step">
+                    <h3><span class="step-badge">2</span> Pilih Jam Kedatangan</h3>
+                    <div class="time-slots" id="time-slots">
+                        <button class="slot-btn" data-time="08:00">08.00 – 09.00</button>
+                        <button class="slot-btn" data-time="09:00">09.00 – 10.00</button>
+                        <button class="slot-btn" data-time="10:00">10.00 – 11.00</button>
+                        <button class="slot-btn" data-time="11:00">11.00 – 12.00</button>
+                        <button class="slot-btn" data-time="13:00">13.00 – 14.00</button>
+                        <button class="slot-btn" data-time="14:00">14.00 – 15.00</button>
+                        <button class="slot-btn" data-time="15:00">15.00 – 16.00</button>
+                        <button class="slot-btn" data-time="16:00">16.00 – 17.00</button>
+                    </div>
+                </div>
+
+                <div class="booking-step">
+                    <h3><span class="step-badge">3</span> Isi Data &amp; Alamat</h3>
+                    <div class="booking-fields">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="book-name">Nama Lengkap</label>
+                                <input type="text" id="book-name" placeholder="Contoh: Budi Santoso">
+                            </div>
+                            <div class="form-group">
+                                <label for="book-phone">No. HP / WhatsApp</label>
+                                <input type="tel" id="book-phone" placeholder="Contoh: 0812-xxxx-xxxx">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="book-address">Alamat Lengkap</label>
+                            <input type="text" id="book-address" placeholder="Jl. Contoh No. 10, RT 01/RW 02">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="book-city">Kota / Kecamatan</label>
+                                <input type="text" id="book-city" placeholder="Contoh: Jakarta Selatan">
+                            </div>
+                            <div class="form-group">
+                                <label for="book-area">Area yang Diukur</label>
+                                <select id="book-area">
+                                    <option value="jendela">Terali Jendela</option>
+                                    <option value="pintu">Terali Pintu</option>
+                                    <option value="balkon">Terali Balkon</option>
+                                    <option value="semua">Semua Area</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="book-notes">Catatan Tambahan</label>
+                            <textarea id="book-notes" placeholder="Contoh: Ada 3 jendela dan 1 pintu utama, rumah di dalam gang..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary booking-submit-btn" id="booking-submit" disabled>
+                    <i class="fa-solid fa-calendar-check"></i> Konfirmasi Booking
+                </button>
+            </div>
+
+            <div class="booking-summary-panel" id="booking-summary-panel">
+                <div class="summary-idle" id="summary-idle">
+                    <i class="fa-solid fa-calendar-days"></i>
+                    <p>Ringkasan booking Anda akan muncul di sini setelah semua data diisi.</p>
+                </div>
+                <div class="summary-card" id="summary-card" style="display:none">
+                    <div class="summary-header">
+                        <i class="fa-solid fa-circle-check"></i>
+                        <div>
+                            <h3>Booking Dikonfirmasi!</h3>
+                            <p>Tim kami akan segera menghubungi Anda.</p>
+                        </div>
+                    </div>
+                    <div class="summary-details">
+                        <div class="summary-row">
+                            <span class="summary-label"><i class="fa-solid fa-calendar"></i> Tanggal</span>
+                            <span class="summary-value" id="sum-date">—</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="summary-label"><i class="fa-solid fa-clock"></i> Jam</span>
+                            <span class="summary-value" id="sum-time">—</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="summary-label"><i class="fa-solid fa-user"></i> Nama</span>
+                            <span class="summary-value" id="sum-name">—</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="summary-label"><i class="fa-solid fa-phone"></i> No. HP</span>
+                            <span class="summary-value" id="sum-phone">—</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="summary-label"><i class="fa-solid fa-location-dot"></i> Alamat</span>
+                            <span class="summary-value" id="sum-address">—</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="summary-label"><i class="fa-solid fa-city"></i> Kota</span>
+                            <span class="summary-value" id="sum-city">—</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="summary-label"><i class="fa-solid fa-border-all"></i> Area</span>
+                            <span class="summary-value" id="sum-area">—</span>
+                        </div>
+                    </div>
+                    <div class="summary-booking-id">
+                        No. Booking: <strong id="sum-booking-id">BK-XXXXXX</strong>
+                    </div>
+                    <a id="sum-wa-link" href="#" target="_blank" class="btn btn-whatsapp" style="width:100%;justify-content:center;margin-top:1.5rem">
+                        <i class="fa-brands fa-whatsapp"></i> Konfirmasi via WhatsApp
+                    </a>
+                    <button class="btn btn-outline" id="booking-reset" style="width:100%;margin-top:0.75rem">
+                        <i class="fa-solid fa-rotate-left"></i> Buat Booking Baru
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <div class="logo"><i class="fa-solid fa-layer-group"></i> BesiKraf.</div>
+                <p>Menciptakan keamanan yang berpadu dengan keindahan arsitektur sejak 2010.</p>
+            </div>
+            <div class="footer-links">
+                <h3>Halaman</h3>
+                <ul>
+                    <li><a href="katalog.html">Katalog</a></li>
+                    <li><a href="custom.html">Custom Desain</a></li>
+                    <li><a href="upload.html">Upload Foto</a></li>
+                    <li><a href="booking.html">Booking Survey</a></li>
+                </ul>
+            </div>
+            <div class="footer-links">
+                <h3>Perusahaan</h3>
+                <ul>
+                    <li><a href="#">Tentang Kami</a></li>
+                    <li><a href="#">Portofolio</a></li>
+                    <li><a href="#">Kontak</a></li>
+                </ul>
+            </div>
+            <div class="footer-social">
+                <h3>Ikuti Kami</h3>
+                <div class="social-icons">
+                    <a href="#"><i class="fa-brands fa-instagram"></i></a>
+                    <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
+                    <a href="#"><i class="fa-brands fa-whatsapp"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom"><p>&copy; 2026 BesiKraf Marketplace. Hak Cipta Dilindungi.</p></div>
+    </footer>
+
+    <div class="cart-overlay" id="cart-overlay"></div>
+    <div class="cart-sidebar" id="cart-sidebar">
+        <div class="cart-header">
+            <h2>Keranjang Belanja</h2>
+            <button class="close-btn" id="close-cart"><i class="fa-solid fa-times"></i></button>
+        </div>
+        <div class="cart-items" id="cart-items">
+            <div class="empty-cart-msg">Keranjang Anda kosong.</div>
+        </div>
+        <div class="cart-footer">
+            <div class="cart-total">
+                <span>Total</span>
+                <span id="cart-total-price">Rp 0</span>
+            </div>
+            <button class="btn btn-primary checkout-btn">Checkout Sekarang</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

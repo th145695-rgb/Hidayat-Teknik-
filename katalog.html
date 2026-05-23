@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Katalog Terali BesiKraf - Koleksi terali premium untuk jendela, pintu, dan balkon.">
+    <title>BesiKraf | Katalog Produk</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo"><a href="index.html" style="color:inherit;text-decoration:none"><i class="fa-solid fa-layer-group"></i> BesiKraf.</a></div>
+        <ul class="nav-links">
+            <li><a href="index.html">Beranda</a></li>
+            <li><a href="katalog.html" class="active">Katalog</a></li>
+            <li><a href="custom.html">Custom Desain</a></li>
+            <li><a href="upload.html">Upload Foto</a></li>
+            <li><a href="booking.html">Booking Survey</a></li>
+        </ul>
+        <div class="nav-actions">
+            <button class="icon-btn cart-btn" aria-label="Cart">
+                <i class="fa-solid fa-shopping-cart"></i>
+                <span class="cart-count">0</span>
+            </button>
+        </div>
+    </nav>
+
+    <div class="page-hero-small">
+        <span class="badge">Koleksi Lengkap</span>
+        <h1>Katalog Produk</h1>
+        <p>Pilih desain terali yang sesuai dengan arsitektur rumah Anda.</p>
+    </div>
+
+    <section class="catalog-section catalog-page">
+        <div class="filter-container">
+            <button class="filter-btn active" data-filter="all">Semua</button>
+            <button class="filter-btn" data-filter="pintu">Pintu Utama</button>
+            <button class="filter-btn" data-filter="jendela">Jendela</button>
+            <button class="filter-btn" data-filter="klasik">Klasik</button>
+            <button class="filter-btn" data-filter="modern">Modern</button>
+        </div>
+        <div class="products-grid" id="products-container"></div>
+    </section>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <div class="logo"><i class="fa-solid fa-layer-group"></i> BesiKraf.</div>
+                <p>Menciptakan keamanan yang berpadu dengan keindahan arsitektur sejak 2010.</p>
+            </div>
+            <div class="footer-links">
+                <h3>Halaman</h3>
+                <ul>
+                    <li><a href="katalog.html">Katalog</a></li>
+                    <li><a href="custom.html">Custom Desain</a></li>
+                    <li><a href="upload.html">Upload Foto</a></li>
+                    <li><a href="booking.html">Booking Survey</a></li>
+                </ul>
+            </div>
+            <div class="footer-links">
+                <h3>Perusahaan</h3>
+                <ul>
+                    <li><a href="#">Tentang Kami</a></li>
+                    <li><a href="#">Portofolio</a></li>
+                    <li><a href="#">Kontak</a></li>
+                </ul>
+            </div>
+            <div class="footer-social">
+                <h3>Ikuti Kami</h3>
+                <div class="social-icons">
+                    <a href="#"><i class="fa-brands fa-instagram"></i></a>
+                    <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
+                    <a href="#"><i class="fa-brands fa-whatsapp"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom"><p>&copy; 2026 BesiKraf Marketplace. Hak Cipta Dilindungi.</p></div>
+    </footer>
+
+    <div class="cart-overlay" id="cart-overlay"></div>
+    <div class="cart-sidebar" id="cart-sidebar">
+        <div class="cart-header">
+            <h2>Keranjang Belanja</h2>
+            <button class="close-btn" id="close-cart"><i class="fa-solid fa-times"></i></button>
+        </div>
+        <div class="cart-items" id="cart-items">
+            <div class="empty-cart-msg">Keranjang Anda kosong.</div>
+        </div>
+        <div class="cart-footer">
+            <div class="cart-total">
+                <span>Total</span>
+                <span id="cart-total-price">Rp 0</span>
+            </div>
+            <button class="btn btn-primary checkout-btn">Checkout Sekarang</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

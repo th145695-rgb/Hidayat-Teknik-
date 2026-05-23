@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="BesiKraf - Kalkulator harga terali custom. Hitung estimasi harga berdasarkan ukuran dan material.">
+    <title>BesiKraf | Custom Desain</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo"><a href="index.html" style="color:inherit;text-decoration:none"><i class="fa-solid fa-layer-group"></i> BesiKraf.</a></div>
+        <ul class="nav-links">
+            <li><a href="index.html">Beranda</a></li>
+            <li><a href="katalog.html">Katalog</a></li>
+            <li><a href="custom.html" class="active">Custom Desain</a></li>
+            <li><a href="upload.html">Upload Foto</a></li>
+            <li><a href="booking.html">Booking Survey</a></li>
+        </ul>
+        <div class="nav-actions">
+            <button class="icon-btn cart-btn" aria-label="Cart">
+                <i class="fa-solid fa-shopping-cart"></i>
+                <span class="cart-count">0</span>
+            </button>
+        </div>
+    </nav>
+
+    <div class="page-hero-small">
+        <span class="badge">Hitung Otomatis</span>
+        <h1>Kalkulator Custom Terali</h1>
+        <p>Hitung estimasi harga terali custom Anda berdasarkan ukuran dan spesifikasi material.</p>
+    </div>
+
+    <section class="calculator-section">
+        <div class="calculator-container glass-panel">
+            <div class="calculator-content">
+                <h2>Masukkan Spesifikasi</h2>
+                <p>Isi dimensi dan pilih material — harga tampil otomatis.</p>
+                <form id="price-calculator" class="calc-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="calc-lebar">Lebar (cm)</label>
+                            <input type="number" id="calc-lebar" placeholder="Contoh: 120" required min="10">
+                        </div>
+                        <div class="form-group">
+                            <label for="calc-tinggi">Tinggi (cm)</label>
+                            <input type="number" id="calc-tinggi" placeholder="Contoh: 150" required min="10">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="calc-jenis">Jenis Besi</label>
+                            <select id="calc-jenis" required>
+                                <option value="hollow_galvanis">Hollow Galvanis</option>
+                                <option value="nako_solid">Nako Solid (+Rp 200rb/m²)</option>
+                                <option value="tempa">Besi Tempa (+Rp 400rb/m²)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="calc-warna">Warna</label>
+                            <select id="calc-warna" required>
+                                <option value="hitam_matte">Hitam Matte</option>
+                                <option value="putih">Putih</option>
+                                <option value="emas">Emas / Gold (+Rp 50rb/m²)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="calc-motif">Motif / Desain</label>
+                        <select id="calc-motif" required>
+                            <option value="minimalis">Minimalis / Garis Lurus</option>
+                            <option value="geometris">Geometris Modern (+Rp 150rb/m²)</option>
+                            <option value="klasik">Klasik / Floral (+Rp 300rb/m²)</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="calculator-result-panel">
+                <h3>Estimasi Harga</h3>
+                <div class="price-display" id="calc-result-price">Rp 0</div>
+                <div class="price-details" id="calc-result-details">Silakan masukkan ukuran (Lebar &amp; Tinggi) untuk melihat estimasi harga.</div>
+                <button class="btn btn-primary calc-submit-btn" id="calc-add-to-cart" disabled>
+                    <i class="fa-solid fa-cart-plus"></i> Pesan Custom Ini
+                </button>
+                <a href="booking.html" class="btn btn-outline" style="margin-top:0.75rem;display:flex;align-items:center;justify-content:center;gap:0.5rem">
+                    <i class="fa-solid fa-calendar-check"></i> Booking Survey Ukur
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <div class="logo"><i class="fa-solid fa-layer-group"></i> BesiKraf.</div>
+                <p>Menciptakan keamanan yang berpadu dengan keindahan arsitektur sejak 2010.</p>
+            </div>
+            <div class="footer-links">
+                <h3>Halaman</h3>
+                <ul>
+                    <li><a href="katalog.html">Katalog</a></li>
+                    <li><a href="custom.html">Custom Desain</a></li>
+                    <li><a href="upload.html">Upload Foto</a></li>
+                    <li><a href="booking.html">Booking Survey</a></li>
+                </ul>
+            </div>
+            <div class="footer-links">
+                <h3>Perusahaan</h3>
+                <ul>
+                    <li><a href="#">Tentang Kami</a></li>
+                    <li><a href="#">Portofolio</a></li>
+                    <li><a href="#">Kontak</a></li>
+                </ul>
+            </div>
+            <div class="footer-social">
+                <h3>Ikuti Kami</h3>
+                <div class="social-icons">
+                    <a href="#"><i class="fa-brands fa-instagram"></i></a>
+                    <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
+                    <a href="#"><i class="fa-brands fa-whatsapp"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom"><p>&copy; 2026 BesiKraf Marketplace. Hak Cipta Dilindungi.</p></div>
+    </footer>
+
+    <div class="cart-overlay" id="cart-overlay"></div>
+    <div class="cart-sidebar" id="cart-sidebar">
+        <div class="cart-header">
+            <h2>Keranjang Belanja</h2>
+            <button class="close-btn" id="close-cart"><i class="fa-solid fa-times"></i></button>
+        </div>
+        <div class="cart-items" id="cart-items">
+            <div class="empty-cart-msg">Keranjang Anda kosong.</div>
+        </div>
+        <div class="cart-footer">
+            <div class="cart-total">
+                <span>Total</span>
+                <span id="cart-total-price">Rp 0</span>
+            </div>
+            <button class="btn btn-primary checkout-btn">Checkout Sekarang</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
