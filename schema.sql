@@ -24,7 +24,16 @@ INSERT INTO products (title, category, category_label, price, image_url) VALUES
 ('Geometric Security Door',   'pintu',  'Pintu Utama',  3500000, 'assets/images/modern_door_trellis_1779491945621.png'),
 ('Modern Vertical Lines',     'modern', 'Modern',       1500000, 'assets/images/minimalist_window_trellis_1779491829216.png'),
 ('Victorian Arch Window',     'klasik', 'Klasik',       3100000, 'assets/images/classic_iron_trellis_1779491907306.png'),
-('Industrial Mesh Door',      'pintu',  'Pintu Utama',  4200000, 'assets/images/modern_door_trellis_1779491945621.png');
+('Industrial Mesh Door',      'pintu',  'Pintu Utama',  4200000, 'assets/images/modern_door_trellis_1779491945621.png'),
+('Premium Laser Cut Door',    'pintu',  'Pintu Utama',  5500000, 'assets/images/modern_door_trellis_1779491945621.png'),
+('European Style Window Grid','klasik', 'Klasik',       1850000, 'assets/images/classic_iron_trellis_1779491907306.png'),
+('Industrial Expanded Metal', 'modern', 'Modern',       4800000, 'assets/images/modern_door_trellis_1779491945621.png'),
+('Simple Diamond Window',     'jendela', 'Jendela',     950000,  'assets/images/minimalist_window_trellis_1779491829216.png'),
+('Ornate Wrought Iron Gate',  'klasik', 'Klasik',       8500000, 'assets/images/classic_iron_trellis_1779491907306.png'),
+('Modern Horizontal Slat',    'modern', 'Modern',       3200000, 'assets/images/minimalist_window_trellis_1779491829216.png'),
+('Elegant French Window',     'klasik', 'Klasik',       2400000, 'assets/images/classic_iron_trellis_1779491907306.png'),
+('Stainless Security Door',   'pintu',  'Pintu Utama',  6200000, 'assets/images/modern_door_trellis_1779491945621.png'),
+('Geometric Balcony Guard',   'modern', 'Modern',       1750000, 'assets/images/minimalist_window_trellis_1779491829216.png');
 
 -- -----------------------------------------------
 -- 2. ORDERS (pesanan / checkout keranjang)

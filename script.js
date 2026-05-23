@@ -5,12 +5,21 @@
 
 // ---- Product Data (shared, fallback jika DB tidak tersedia) ----
 const products = [
-    { id: 1, title: "Minimalist Window Grid",     category: "jendela", price: 1250000, image: "assets/images/minimalist_window_trellis_1779491829216.png", categoryLabel: "Jendela" },
-    { id: 2, title: "Classic Floral Wrought Iron",category: "klasik",  price: 2800000, image: "assets/images/classic_iron_trellis_1779491907306.png",       categoryLabel: "Klasik" },
-    { id: 3, title: "Geometric Security Door",    category: "pintu",   price: 3500000, image: "assets/images/modern_door_trellis_1779491945621.png",         categoryLabel: "Pintu Utama" },
-    { id: 4, title: "Modern Vertical Lines",      category: "modern",  price: 1500000, image: "assets/images/minimalist_window_trellis_1779491829216.png",   categoryLabel: "Modern" },
-    { id: 5, title: "Victorian Arch Window",      category: "klasik",  price: 3100000, image: "assets/images/classic_iron_trellis_1779491907306.png",        categoryLabel: "Klasik" },
-    { id: 6, title: "Industrial Mesh Door",       category: "pintu",   price: 4200000, image: "assets/images/modern_door_trellis_1779491945621.png",         categoryLabel: "Pintu Utama" }
+    { id: 1, title: 'Minimalist Window Grid',     category: 'jendela', price: 1250000, image: 'assets/images/minimalist_window_trellis_1779491829216.png', categoryLabel: 'Jendela' },
+    { id: 2, title: 'Classic Floral Wrought Iron',category: 'klasik',  price: 2800000, image: 'assets/images/classic_iron_trellis_1779491907306.png',       categoryLabel: 'Klasik' },
+    { id: 3, title: 'Geometric Security Door',    category: 'pintu',   price: 3500000, image: 'assets/images/modern_door_trellis_1779491945621.png',         categoryLabel: 'Pintu Utama' },
+    { id: 4, title: 'Modern Vertical Lines',      category: 'modern',  price: 1500000, image: 'assets/images/minimalist_window_trellis_1779491829216.png',   categoryLabel: 'Modern' },
+    { id: 5, title: 'Victorian Arch Window',      category: 'klasik',  price: 3100000, image: 'assets/images/classic_iron_trellis_1779491907306.png',        categoryLabel: 'Klasik' },
+    { id: 6, title: 'Industrial Mesh Door',       category: 'pintu',   price: 4200000, image: 'assets/images/modern_door_trellis_1779491945621.png',         categoryLabel: 'Pintu Utama' },
+    { id: 7, title: 'Premium Laser Cut Door',     category: 'pintu',   price: 5500000, image: 'assets/images/modern_door_trellis_1779491945621.png',         categoryLabel: 'Pintu Utama' },
+    { id: 8, title: 'European Style Window Grid', category: 'klasik',  price: 1850000, image: 'assets/images/classic_iron_trellis_1779491907306.png',        categoryLabel: 'Klasik' },
+    { id: 9, title: 'Industrial Expanded Metal',  category: 'modern',  price: 4800000, image: 'assets/images/modern_door_trellis_1779491945621.png',         categoryLabel: 'Modern' },
+    { id: 10, title: 'Simple Diamond Window',     category: 'jendela', price: 950000,  image: 'assets/images/minimalist_window_trellis_1779491829216.png',   categoryLabel: 'Jendela' },
+    { id: 11, title: 'Ornate Wrought Iron Gate',  category: 'klasik',  price: 8500000, image: 'assets/images/classic_iron_trellis_1779491907306.png',        categoryLabel: 'Klasik' },
+    { id: 12, title: 'Modern Horizontal Slat',    category: 'modern',  price: 3200000, image: 'assets/images/minimalist_window_trellis_1779491829216.png',   categoryLabel: 'Modern' },
+    { id: 13, title: 'Elegant French Window',     category: 'klasik',  price: 2400000, image: 'assets/images/classic_iron_trellis_1779491907306.png',        categoryLabel: 'Klasik' },
+    { id: 14, title: 'Stainless Security Door',   category: 'pintu',   price: 6200000, image: 'assets/images/modern_door_trellis_1779491945621.png',         categoryLabel: 'Pintu Utama' },
+    { id: 15, title: 'Geometric Balcony Guard',   category: 'modern',  price: 1750000, image: 'assets/images/minimalist_window_trellis_1779491829216.png',   categoryLabel: 'Modern' }
 ];
 
 // ---- Shared State ----
