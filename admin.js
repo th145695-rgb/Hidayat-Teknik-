@@ -9,28 +9,41 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnLogin = document.getElementById('btn-login');
     const tableBody = document.getElementById('product-table-body');
 
+    const loginForm = document.getElementById('login-form');
+    const loginError = document.getElementById('login-error');
+
     // --- LOGIN LOGIC ---
-    const checkLogin = () => {
-        if (localStorage.getItem('admin_logged_in') === 'true') {
+    const checkSession = async () => {
+        if (typeof db === 'undefined' || !db.isConfigured()) return;
+        const session = await db.getSession();
+        if (session) {
             loginSection.style.display = 'none';
             adminContent.style.display = 'block';
             loadProducts();
         }
     };
 
-    btnLogin.addEventListener('click', () => {
-        const pin = pinInput.value;
-        if (pin === '123456') { // PIN Rahasia Admin
-            localStorage.setItem('admin_logged_in', 'true');
-            checkLogin();
-        } else {
-            alert('PIN Salah!');
-            pinInput.value = '';
-        }
-    });
+    loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('admin-email').value;
+        const password = document.getElementById('admin-password').value;
+        
+        const originalText = btnLogin.innerHTML;
+        btnLogin.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Loading...';
+        btnLogin.disabled = true;
 
-    pinInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') btnLogin.click();
+        const res = await db.login(email, password);
+        if (res.success) {
+            loginSection.style.display = 'none';
+            adminContent.style.display = 'block';
+            loadProducts();
+        } else {
+            loginError.textContent = 'Email atau password salah!';
+            loginError.style.display = 'block';
+        }
+        
+        btnLogin.innerHTML = originalText;
+        btnLogin.disabled = false;
     });
 
     // --- PRODUCT MANAGEMENT ---
@@ -54,7 +67,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td><strong>${p.title}</strong></td>
                 <td><span class="badge">${p.category_label}</span></td>
                 <td>Rp ${p.price.toLocaleString('id-ID')}</td>
-                <td><button class="btn-delete" data-id="${p.id}"><i class="fa-solid fa-trash"></i> Hapus</button></td>
+                <td>
+                    <button class="btn-edit" style="background:#f39c12; color:white; border:none; padding:0.5rem; border-radius:6px; cursor:pointer;" data-product='${JSON.stringify(p)}'><i class="fa-solid fa-pen"></i></button>
+                    <button class="btn-delete" data-id="${p.id}"><i class="fa-solid fa-trash"></i></button>
+                </td>
             `;
             tableBody.appendChild(tr);
         });
@@ -69,7 +85,44 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
         });
+
+        // Edit handlers
+        document.querySelectorAll('.btn-edit').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const product = JSON.parse(e.currentTarget.getAttribute('data-product'));
+                
+                // Isi form dengan data produk
+                document.getElementById('p-id').value = product.id;
+                document.getElementById('p-title').value = product.title;
+                document.getElementById('p-price').value = product.price;
+                document.getElementById('p-category').value = product.category;
+                
+                // Preview gambar lama
+                imgPreview.src = product.image_url;
+                imgPreview.style.display = 'block';
+                imgInput.removeAttribute('required'); // Foto opsional saat edit
+
+                // Ubah UI Form
+                document.querySelector('#add-product-form h3').textContent = 'Edit Produk';
+                document.getElementById('btn-submit-product').innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Simpan Perubahan';
+                document.getElementById('btn-cancel-edit').style.display = 'block';
+                
+                // Scroll ke atas
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        });
     };
+
+    // Tombol Batal Edit
+    document.getElementById('btn-cancel-edit').addEventListener('click', () => {
+        form.reset();
+        document.getElementById('p-id').value = '';
+        imgPreview.style.display = 'none';
+        imgInput.setAttribute('required', 'required');
+        document.querySelector('#add-product-form h3').textContent = 'Tambah Produk Baru';
+        document.getElementById('btn-submit-product').innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Upload Produk';
+        document.getElementById('btn-cancel-edit').style.display = 'none';
+    });
 
     // Menampilkan preview gambar yang dipilih
     imgInput.addEventListener('change', function() {
@@ -95,21 +148,22 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        const id = document.getElementById('p-id').value;
         const title = document.getElementById('p-title').value;
         const price = parseInt(document.getElementById('p-price').value);
         const category = document.getElementById('p-category').value;
         const file = imgInput.files[0];
+        const oldImageUrl = imgPreview.src;
 
-        const btn = form.querySelector('button');
+        const btn = form.querySelector('button[type="submit"]');
         const originalText = btn.innerHTML;
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Mengupload...';
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...';
         btn.disabled = true;
 
-        const res = await db.addProduct({ title, category, price, file });
+        const res = await db.upsertProduct({ id, title, category, price, file, oldImageUrl });
 
         if (res.success) {
-            form.reset();
-            imgPreview.style.display = 'none';
+            document.getElementById('btn-cancel-edit').click(); // Reset form
             loadProducts(); // Refresh tabel
         }
 
@@ -118,5 +172,5 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Initialize
-    checkLogin();
+    checkSession();
 });

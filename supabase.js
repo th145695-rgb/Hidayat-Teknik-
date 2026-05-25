@@ -203,12 +203,35 @@ const db = {
     },
 
     // ------------------------------------------
-    // PRODUCTS: Tambah Produk Baru (Admin)
+    // AUTHENTICATION
     // ------------------------------------------
-    addProduct: async ({ title, category, price, file }) => {
-        const toast = showToast('Mengupload produk...', 'loading');
+    login: async (email, password) => {
+        const toast = showToast('Proses login...', 'loading');
         try {
-            let imageUrl = null;
+            const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+            toast.remove();
+            if (error) throw error;
+            showToast('Login berhasil!', 'success');
+            return { success: true, user: data.user };
+        } catch (err) {
+            toast.remove();
+            console.error('[Auth] Login error:', err.message);
+            return { success: false, error: err.message };
+        }
+    },
+
+    getSession: async () => {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        return session;
+    },
+
+    // ------------------------------------------
+    // PRODUCTS: Tambah / Edit Produk (Admin)
+    // ------------------------------------------
+    upsertProduct: async ({ id, title, category, price, file, oldImageUrl }) => {
+        const toast = showToast('Menyimpan produk...', 'loading');
+        try {
+            let imageUrl = oldImageUrl;
             if (file) {
                 const ext = file.name.split('.').pop();
                 const filename = `product_${Date.now()}.${ext}`;
@@ -230,25 +253,30 @@ const db = {
                 'modern': 'Modern'
             };
 
-            const { data, error } = await supabaseClient
-                .from('products')
-                .insert([{
-                    title: title,
-                    category: category,
-                    category_label: categoryLabels[category] || 'Lainnya',
-                    price: price,
-                    image_url: imageUrl || 'assets/images/minimalist_window_trellis_1779491829216.png',
-                    is_active: true
-                }]);
+            const payload = {
+                title: title,
+                category: category,
+                category_label: categoryLabels[category] || 'Lainnya',
+                price: price,
+                image_url: imageUrl || 'assets/images/minimalist_window_trellis_1779491829216.png',
+                is_active: true
+            };
+
+            let res;
+            if (id) {
+                res = await supabaseClient.from('products').update(payload).eq('id', id);
+            } else {
+                res = await supabaseClient.from('products').insert([payload]);
+            }
 
             toast.remove();
-            if (error) throw error;
-            showToast('Produk berhasil ditambahkan!', 'success');
+            if (res.error) throw res.error;
+            showToast(id ? 'Produk berhasil diupdate!' : 'Produk berhasil ditambahkan!', 'success');
             return { success: true };
         } catch (err) {
             toast.remove();
-            showToast('Gagal menambahkan produk: ' + err.message, 'error');
-            console.error('[DB] Add product error:', err.message);
+            showToast('Gagal menyimpan produk: ' + err.message, 'error');
+            console.error('[DB] Upsert product error:', err.message);
             return { success: false, error: err.message };
         }
     },
