@@ -5,45 +5,40 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const loginSection = document.getElementById('login-section');
     const adminContent = document.getElementById('admin-content');
-    const pinInput = document.getElementById('admin-pin');
     const btnLogin = document.getElementById('btn-login');
     const tableBody = document.getElementById('product-table-body');
+
+    // === KREDENSIAL ADMIN ===
+    const ADMIN_EMAIL    = 'th145695@gmail.com';
+    const ADMIN_PASSWORD = 'taufik123';
 
     const loginForm = document.getElementById('login-form');
     const loginError = document.getElementById('login-error');
 
     // --- LOGIN LOGIC ---
-    const checkSession = async () => {
-        if (typeof db === 'undefined' || !db.isConfigured()) return;
-        const session = await db.getSession();
-        if (session) {
-            loginSection.style.display = 'none';
-            adminContent.style.display = 'block';
-            loadProducts();
-        }
+    const unlockDashboard = () => {
+        loginSection.style.display = 'none';
+        adminContent.style.display = 'block';
+        sessionStorage.setItem('ht_admin', '1');
+        loadProducts();
     };
 
-    loginForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const email = document.getElementById('admin-email').value;
-        const password = document.getElementById('admin-password').value;
-        
-        const originalText = btnLogin.innerHTML;
-        btnLogin.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Loading...';
-        btnLogin.disabled = true;
+    const checkSession = () => {
+        if (sessionStorage.getItem('ht_admin') === '1') unlockDashboard();
+    };
 
-        const res = await db.login(email, password);
-        if (res.success) {
-            loginSection.style.display = 'none';
-            adminContent.style.display = 'block';
-            loadProducts();
+    loginForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const email    = document.getElementById('admin-email').value.trim().toLowerCase();
+        const password = document.getElementById('admin-password').value;
+
+        if (email === ADMIN_EMAIL.toLowerCase() && password === ADMIN_PASSWORD) {
+            unlockDashboard();
         } else {
-            loginError.textContent = 'Email atau password salah!';
+            loginError.textContent = '⚠️ Email atau password salah!';
             loginError.style.display = 'block';
+            document.getElementById('admin-password').value = '';
         }
-        
-        btnLogin.innerHTML = originalText;
-        btnLogin.disabled = false;
     });
 
     // --- PRODUCT MANAGEMENT ---
