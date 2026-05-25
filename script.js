@@ -1073,36 +1073,46 @@ if (dropzone) {
 
             try {
                 await sleep(700);
-                const aiResult = await renderAIDesign();
+                
+                const areaName = selectedArea === 'semua' ? 'Rumah' : selectedArea;
+                const query = `Desain Terali ${areaName} ${selectedStyle}`;
+                const searchUrl = `https://www.google.com/search?tbm=isch&q=${encodeURIComponent(query)}`;
+                
+                const googleLinkBtn = document.getElementById('google-search-link');
+                if (googleLinkBtn) {
+                    googleLinkBtn.href = searchUrl;
+                }
+
+                showRecommendations(selectedArea, selectedStyle);
+
                 recLoading.style.display = 'none';
+                recResult.style.display = 'block';
                 validateUpload();
 
-                // Simpan ke Supabase (non-blocking)
+                // Simpan ke Supabase
                 const recIds = (recommendations[selectedArea]?.ids) || [];
                 const baseNotes = uploadNotes ? uploadNotes.value.trim() : '';
-                const aiNotes = [
+                const notesToSave = [
                     baseNotes,
-                    `AI Engine: ${aiResult.provider === 'openai' ? 'OpenAI Image API' : 'OpenAI belum aktif'}`,
-                    `AI Style: ${(aiStyles[selectedStyle] || aiStyles.minimalis).label}`,
-                    `AI Prompt: ${aiResult.prompt}`,
-                    `Estimasi: ${formatIDR(aiResult.estimate.total)} - ${aiResult.estimate.detail}`
+                    `Referensi Google: ${query}`
                 ].filter(Boolean).join('\n');
+                
                 if (typeof db !== 'undefined' && db.isConfigured()) {
                     db.savePhotoRequest({
                         areaType:       selectedArea,
                         file:           uploadedFile,
-                        notes:          aiNotes,
+                        notes:          notesToSave,
                         recommendedIds: recIds,
                         silent:         true
                     });
                 }
             } catch (err) {
-                console.error('[AI Mockup] Failed to generate preview:', err);
+                console.error('[Google Reference] Gagal memuat rekomendasi:', err);
                 recLoading.style.display = 'none';
                 if (recIdle) recIdle.style.display = 'flex';
                 validateUpload();
-                if (typeof showToast !== 'undefined') showToast('Gagal membuat preview. Coba foto lain.', 'error');
-                else alert('Gagal membuat preview. Coba foto lain.');
+                if (typeof showToast !== 'undefined') showToast('Terjadi kesalahan. Coba lagi nanti.', 'error');
+                else alert('Terjadi kesalahan. Coba lagi nanti.');
             }
         });
     }

@@ -28,9 +28,9 @@
     </nav>
 
     <div class="page-hero-small">
-        <span class="badge">AI Generate Terali</span>
+        <span class="badge">Cari Referensi Terali</span>
         <h1>Upload Foto Area Rumah</h1>
-        <p>Upload foto jendela, pintu, atau balkon Anda, lalu lihat mockup terali otomatis dengan style pilihan.</p>
+        <p>Upload foto jendela, pintu, atau balkon Anda, lalu temukan referensi desain terali terbaik dari Google dan katalog kami.</p>
     </div>
 
     <section class="upload-section" style="padding-top:2rem">
@@ -126,72 +126,41 @@
                 </div>
 
                 <button class="btn btn-primary upload-submit-btn" id="upload-submit" disabled>
-                    <i class="fa-solid fa-wand-magic-sparkles"></i> Generate AI Design
+                    <i class="fa-brands fa-google"></i> Cari Referensi di Google
                 </button>
             </div>
 
             <div class="recommendation-panel" id="recommendation-panel">
                 <div class="rec-idle" id="rec-idle">
-                    <i class="fa-solid fa-wand-magic-sparkles"></i>
-                    <p>Mockup Before vs AI Design akan muncul di sini setelah foto, area, dan style dipilih.</p>
+                    <i class="fa-solid fa-search"></i>
+                    <p>Rekomendasi dari katalog kami akan muncul di sini setelah foto, area, dan style dipilih.</p>
                 </div>
                 <div class="rec-loading" id="rec-loading" style="display:none">
                     <div class="spinner"></div>
-                    <p>Menganalisa foto dan membuat desain terali...</p>
+                    <p>Mencari referensi terbaik dan menyiapkan rekomendasi...</p>
                 </div>
                 <div class="rec-result" id="rec-result" style="display:none">
                     <div class="rec-result-header">
                         <i class="fa-solid fa-circle-check"></i>
                         <div>
-                            <h3>Before vs AI Design</h3>
-                            <p id="rec-area-label">Berdasarkan foto yang Anda upload</p>
+                            <h3>Rekomendasi Desain</h3>
+                            <p id="rec-area-label">Berdasarkan pilihan area dan style Anda</p>
                         </div>
                     </div>
 
-                    <div class="ai-preview-grid">
-                        <figure class="ai-preview-card">
-                            <span>Foto Asli</span>
-                            <img id="ai-before-img" src="" alt="Foto asli area rumah">
-                        </figure>
-                        <figure class="ai-preview-card ai-preview-generated">
-                            <span>AI Design</span>
-                            <img id="ai-after-img" src="" alt="Mockup AI desain terali">
-                            <small id="ai-provider-label">OpenAI Image API</small>
-                        </figure>
-                    </div>
-
-                    <div class="ai-backend-warning" id="ai-backend-warning" style="display:none">
-                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    <div class="ai-estimate-card" style="margin-bottom: 2rem;">
                         <div>
-                            <strong>OpenAI backend belum aktif</strong>
-                            <p id="ai-backend-warning-text">Pasang OPENAI_API_KEY di Vercel agar hasil yang muncul benar-benar dari AI image API.</p>
+                            <span>Buka Referensi</span>
+                            <a href="#" id="google-search-link" target="_blank" class="btn btn-primary" style="padding: 0.5rem 1rem; margin-top: 0.5rem;">
+                                <i class="fa-brands fa-google"></i> Lihat di Google Images
+                            </a>
                         </div>
-                    </div>
-
-                    <div class="ai-analysis" id="ai-analysis"></div>
-
-                    <div class="ai-prompt-box">
-                        <div class="ai-box-label">
-                            <i class="fa-solid fa-terminal"></i>
-                            Prompt otomatis
-                        </div>
-                        <p id="ai-prompt-text"></p>
-                    </div>
-
-                    <div class="ai-estimate-card">
-                        <div>
-                            <span>Estimasi Produksi</span>
-                            <strong id="ai-estimate-price">Rp 0</strong>
-                        </div>
-                        <p id="ai-estimate-detail"></p>
+                        <p>Kami telah menyiapkan kata kunci pencarian yang paling sesuai dengan gaya rumah Anda.</p>
                     </div>
 
                     <h4 class="rec-products-title">Model katalog pendukung</h4>
                     <div class="rec-products" id="rec-products"></div>
                     <div class="rec-cta">
-                        <button type="button" class="btn btn-outline" id="download-ai-preview">
-                            <i class="fa-solid fa-download"></i> Download Preview
-                        </button>
                         <a href="https://wa.me/6281234567890?text=Halo+Hidayat+Teknik%2C+saya+ingin+konsultasi+desain+AI+terali"
                            target="_blank" class="btn btn-whatsapp" id="ai-whatsapp-link">
                             <i class="fa-brands fa-whatsapp"></i> Konsultasi
