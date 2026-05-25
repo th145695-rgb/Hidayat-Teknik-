@@ -1076,11 +1076,11 @@ if (dropzone) {
                 
                 const areaName = selectedArea === 'semua' ? 'Rumah' : selectedArea;
                 const query = `Desain Terali ${areaName} ${selectedStyle}`;
-                const searchUrl = `https://www.google.com/search?tbm=isch&q=${encodeURIComponent(query)}`;
+                const searchUrl = `https://www.google.com/search?tbm=isch&q=${encodeURIComponent(query)}&igu=1`;
                 
-                const googleLinkBtn = document.getElementById('google-search-link');
-                if (googleLinkBtn) {
-                    googleLinkBtn.href = searchUrl;
+                const googleIframe = document.getElementById('google-search-iframe');
+                if (googleIframe) {
+                    googleIframe.src = searchUrl;
                 }
 
                 showRecommendations(selectedArea, selectedStyle);
