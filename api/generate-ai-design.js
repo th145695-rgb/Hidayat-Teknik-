@@ -89,13 +89,14 @@ module.exports = async function handler(req, res) {
         const prompt = buildPrompt(body);
 
         const form = new FormData();
-        form.append('model', process.env.OPENAI_IMAGE_MODEL || 'gpt-image-1.5');
+        // Endpoint edits hanya mensupport dall-e-2
+        form.append('model', 'dall-e-2');
         form.append('image', new Blob([buffer], { type: mimeType }), `terali-reference.${extension}`);
         form.append('prompt', prompt);
         form.append('n', '1');
-        form.append('size', process.env.OPENAI_IMAGE_SIZE || 'auto');
-        form.append('quality', process.env.OPENAI_IMAGE_QUALITY || 'medium');
-        form.append('output_format', 'png');
+        // OpenAI DALL-E 2 edits hanya menerima 256x256, 512x512, atau 1024x1024
+        form.append('size', '1024x1024');
+        form.append('response_format', 'b64_json');
 
         const response = await fetch(OPENAI_IMAGE_ENDPOINT, {
             method: 'POST',
