@@ -374,22 +374,37 @@ if (dropzone) {
         img.src = src;
     });
 
-    const prepareImageForBackend = async (source) => {
+    const prepareImageForBackend = async (source, areaKey) => {
         const img = await loadImageFromSrc(source);
-        const maxSide = 1536;
-        const scale = Math.min(1, maxSide / Math.max(img.width, img.height));
         const canvas = document.createElement('canvas');
-        canvas.width = Math.max(320, Math.round(img.width * scale));
-        canvas.height = Math.max(240, Math.round(img.height * scale));
+        // OpenAI DALL-E 2 edits requires exactly square images
+        canvas.width = 1024;
+        canvas.height = 1024;
         const ctx = canvas.getContext('2d');
+        
+        // Pad to square
+        const scale = Math.min(1024 / img.width, 1024 / img.height);
+        const w = img.width * scale;
+        const h = img.height * scale;
+        const dx = (1024 - w) / 2;
+        const dy = (1024 - h) / 2;
+        
         ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        return canvas.toDataURL('image/jpeg', 0.88);
+        ctx.fillRect(0, 0, 1024, 1024);
+        ctx.drawImage(img, dx, dy, w, h);
+        
+        // Create transparent cutout for DALL-E 2 edits
+        try {
+            const detectedRect = detectMainOpeningRect(canvas, areaKey);
+            ctx.clearRect(detectedRect.x, detectedRect.y, detectedRect.w, detectedRect.h);
+        } catch(e) {
+            ctx.clearRect(1024*0.2, 1024*0.2, 1024*0.6, 1024*0.6);
+        }
+        return canvas.toDataURL('image/png');
     };
 
     const generateWithOpenAIBackend = async ({ source, areaKey, styleKey, notes, prompt, analysis }) => {
-        const imageDataUrl = await prepareImageForBackend(source);
+        const imageDataUrl = await prepareImageForBackend(source, areaKey);
         const response = await fetch('/api/generate-ai-design', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
