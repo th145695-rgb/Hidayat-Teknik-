@@ -367,7 +367,6 @@ ul {
     overflow: hidden;
     transition: var(--transition);
     position: relative;
-    group: product;
 }
 
 .product-card:hover {
