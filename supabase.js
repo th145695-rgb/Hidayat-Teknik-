@@ -273,6 +273,29 @@ const db = {
     },
 
     // ------------------------------------------
+    // PRODUCTS: Hapus Produk (Admin)
+    // ------------------------------------------
+    deleteProduct: async (id) => {
+        const toast = showToast('Menghapus produk...', 'loading');
+        try {
+            const { error } = await supabaseClient
+                .from('products')
+                .delete()
+                .eq('id', id);
+
+            toast.remove();
+            if (error) throw error;
+            showToast('Produk berhasil dihapus!', 'success');
+            return { success: true };
+        } catch (err) {
+            toast.remove();
+            showToast('Gagal menghapus produk.', 'error');
+            console.error('[DB] Delete product error:', err.message);
+            return { success: false, error: err.message };
+        }
+    },
+
+    // ------------------------------------------
     // BOOKING: Cek status booking by kode
     // ------------------------------------------
     checkBooking: async (bookingCode) => {

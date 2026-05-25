@@ -64,6 +64,60 @@
             border-radius: 8px;
             display: none;
         }
+
+        /* --- LOGIN & DASHBOARD STYLES --- */
+        #login-section {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: var(--bg-primary);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+        .login-box {
+            background: var(--card-bg);
+            padding: 3rem;
+            border-radius: 16px;
+            border: 1px solid var(--glass-border);
+            text-align: center;
+            width: 100%;
+            max-width: 400px;
+        }
+        .login-box h2 { margin-bottom: 1.5rem; color: var(--primary-color); }
+        .login-box input {
+            width: 100%; padding: 1rem; margin-bottom: 1rem;
+            background: rgba(0,0,0,0.5); border: 1px solid var(--glass-border);
+            color: #fff; border-radius: 8px; text-align: center; font-size: 1.2rem;
+            letter-spacing: 2px;
+        }
+        #admin-content {
+            display: none;
+        }
+        
+        /* --- PRODUCT TABLE --- */
+        .admin-table-wrapper {
+            margin-top: 3rem;
+            overflow-x: auto;
+        }
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            color: var(--text-color);
+        }
+        .admin-table th, .admin-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .admin-table th { color: var(--primary-color); font-weight: 600; }
+        .admin-table img { width: 60px; height: 60px; object-fit: cover; border-radius: 8px; }
+        .btn-delete {
+            background: #e74c3c; color: white; border: none; padding: 0.5rem 1rem;
+            border-radius: 6px; cursor: pointer; transition: 0.3s;
+        }
+        .btn-delete:hover { background: #c0392b; }
     </style>
 </head>
 <body>
@@ -78,41 +132,73 @@
         </div>
     </nav>
 
-    <div class="admin-container">
-        <div class="admin-header">
-            <h2><i class="fa-solid fa-lock"></i> Tambah Produk Baru</h2>
-            <p>Masukkan produk ke database Supabase secara live.</p>
+    <!-- LOGIN SECTION -->
+    <div id="login-section">
+        <div class="login-box">
+            <h2><i class="fa-solid fa-lock"></i> Login Admin</h2>
+            <p style="margin-bottom: 1rem; color: #888;">Masukkan PIN rahasia untuk masuk</p>
+            <input type="password" id="admin-pin" placeholder="••••••" maxlength="6">
+            <button class="admin-btn" id="btn-login">Masuk</button>
         </div>
+    </div>
 
-        <form id="add-product-form">
-            <div class="form-group">
-                <label>Nama Produk</label>
-                <input type="text" id="p-title" required placeholder="Contoh: Terali Jendela Minimalis">
+    <!-- DASHBOARD SECTION -->
+    <div id="admin-content">
+        <div class="admin-container">
+            <div class="admin-header">
+                <h2><i class="fa-solid fa-gauge"></i> Dasbor Admin</h2>
+                <p>Kelola produk langsung dari browser Anda.</p>
             </div>
 
-            <div class="form-group">
-                <label>Harga (Rupiah)</label>
-                <input type="number" id="p-price" required placeholder="Contoh: 1500000">
-            </div>
+            <form id="add-product-form">
+                <h3 style="margin-bottom: 1rem; color: var(--primary-color);">Tambah Produk Baru</h3>
+                <div class="form-group">
+                    <label>Nama Produk</label>
+                    <input type="text" id="p-title" required placeholder="Contoh: Terali Jendela Minimalis">
+                </div>
 
-            <div class="form-group">
-                <label>Kategori</label>
-                <select id="p-category" required>
-                    <option value="jendela">Jendela</option>
-                    <option value="pintu">Pintu Utama</option>
-                    <option value="klasik">Klasik</option>
-                    <option value="modern">Modern / Balkon</option>
-                </select>
-            </div>
+                <div class="form-group">
+                    <label>Harga (Rupiah)</label>
+                    <input type="number" id="p-price" required placeholder="Contoh: 1500000">
+                </div>
 
-            <div class="form-group">
-                <label>Foto Produk (Maks 5MB)</label>
-                <input type="file" id="p-image" accept="image/*" required>
-                <img id="image-preview" src="" alt="Preview">
-            </div>
+                <div class="form-group">
+                    <label>Kategori</label>
+                    <select id="p-category" required>
+                        <option value="jendela">Jendela</option>
+                        <option value="pintu">Pintu Utama</option>
+                        <option value="klasik">Klasik</option>
+                        <option value="modern">Modern / Balkon</option>
+                    </select>
+                </div>
 
-            <button type="submit" class="admin-btn"><i class="fa-solid fa-cloud-arrow-up"></i> Upload Produk</button>
-        </form>
+                <div class="form-group">
+                    <label>Foto Produk (Maks 5MB)</label>
+                    <input type="file" id="p-image" accept="image/*" required>
+                    <img id="image-preview" src="" alt="Preview">
+                </div>
+
+                <button type="submit" class="admin-btn"><i class="fa-solid fa-cloud-arrow-up"></i> Upload Produk</button>
+            </form>
+
+            <div class="admin-table-wrapper">
+                <h3 style="margin-bottom: 1rem; color: var(--primary-color);">Daftar Produk Aktif</h3>
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Foto</th>
+                            <th>Nama Produk</th>
+                            <th>Kategori</th>
+                            <th>Harga</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="product-table-body">
+                        <tr><td colspan="5" style="text-align: center;">Memuat data...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
