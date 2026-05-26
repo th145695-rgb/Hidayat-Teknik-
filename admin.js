@@ -199,7 +199,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const id = document.getElementById('p-id').value;
         const title = document.getElementById('p-title').value;
-        const price = parseInt(document.getElementById('p-price').value);
+        const price = parseInt(document.getElementById('p-price').value.replace(/\./g, ''));
         const category = document.getElementById('p-category').value;
         const file = imgInput.files[0];
         const oldImageUrl = imgPreview.src;
