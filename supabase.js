@@ -11,7 +11,7 @@
 // 7. Buat Storage bucket bernama "photo-requests" (public)
 // =============================================
 
-const SUPABASE_URL      = 'https://vflxakgedbjnceedshzd.supabase.co'; // Sudah diisi otomatis
+const SUPABASE_URL      = 'https://vfixakgedbjnceedshzd.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmaXhha2dlZGJqbmNlZWRzaHpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0NzY3NzgsImV4cCI6MjA5NTA1Mjc3OH0.qHkRXvpt7DGcNy6aeKaN5IUHVeUcRKav1ZFAdK3BGvQ';
 
 // Inisialisasi client (menggunakan Supabase CDN)
