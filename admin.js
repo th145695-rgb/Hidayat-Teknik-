@@ -41,20 +41,56 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // --- LOGOUT ---
+    document.getElementById('btn-logout').addEventListener('click', () => {
+        sessionStorage.removeItem('ht_admin');
+        adminContent.style.display = 'none';
+        loginSection.style.display = 'flex';
+        document.getElementById('admin-email').value = '';
+        document.getElementById('admin-password').value = '';
+        loginError.style.display = 'none';
+    });
+
+    // === DATA PRODUK STATIS (dari katalog) ===
+    const STATIC_PRODUCTS = [
+        { id: 1,  title: 'Minimalist Window Grid',     category: 'jendela', category_label: 'Jendela',     price: 1250000, image_url: 'assets/images/minimalist_window_trellis_1779491829216.png' },
+        { id: 2,  title: 'Classic Floral Wrought Iron',category: 'klasik',  category_label: 'Klasik',      price: 2800000, image_url: 'assets/images/classic_iron_trellis_1779491907306.png' },
+        { id: 3,  title: 'Geometric Security Door',    category: 'pintu',   category_label: 'Pintu Utama', price: 3500000, image_url: 'assets/images/modern_door_trellis_1779491945621.png' },
+        { id: 4,  title: 'Modern Vertical Lines',      category: 'modern',  category_label: 'Modern',      price: 1500000, image_url: 'assets/images/minimalist_window_trellis_1779491829216.png' },
+        { id: 5,  title: 'Victorian Arch Window',      category: 'klasik',  category_label: 'Klasik',      price: 3100000, image_url: 'assets/images/classic_iron_trellis_1779491907306.png' },
+        { id: 6,  title: 'Industrial Mesh Door',       category: 'pintu',   category_label: 'Pintu Utama', price: 4200000, image_url: 'assets/images/modern_door_trellis_1779491945621.png' },
+        { id: 7,  title: 'Premium Laser Cut Door',     category: 'pintu',   category_label: 'Pintu Utama', price: 5500000, image_url: 'assets/images/modern_door_trellis_1779491945621.png' },
+        { id: 8,  title: 'European Style Window Grid', category: 'klasik',  category_label: 'Klasik',      price: 1850000, image_url: 'assets/images/classic_iron_trellis_1779491907306.png' },
+        { id: 9,  title: 'Industrial Expanded Metal',  category: 'modern',  category_label: 'Modern',      price: 4800000, image_url: 'assets/images/modern_door_trellis_1779491945621.png' },
+        { id: 10, title: 'Simple Diamond Window',      category: 'jendela', category_label: 'Jendela',     price: 950000,  image_url: 'assets/images/minimalist_window_trellis_1779491829216.png' },
+        { id: 11, title: 'Ornate Wrought Iron Gate',   category: 'klasik',  category_label: 'Klasik',      price: 8500000, image_url: 'assets/images/classic_iron_trellis_1779491907306.png' },
+        { id: 12, title: 'Modern Horizontal Slat',     category: 'modern',  category_label: 'Modern',      price: 3200000, image_url: 'assets/images/minimalist_window_trellis_1779491829216.png' },
+        { id: 13, title: 'Elegant French Window',      category: 'klasik',  category_label: 'Klasik',      price: 2400000, image_url: 'assets/images/classic_iron_trellis_1779491907306.png' },
+        { id: 14, title: 'Stainless Security Door',    category: 'pintu',   category_label: 'Pintu Utama', price: 6200000, image_url: 'assets/images/modern_door_trellis_1779491945621.png' },
+        { id: 15, title: 'Geometric Balcony Guard',    category: 'modern',  category_label: 'Modern',      price: 1750000, image_url: 'assets/images/minimalist_window_trellis_1779491829216.png' },
+    ];
+
     // --- PRODUCT MANAGEMENT ---
     const loadProducts = async () => {
         if (typeof db === 'undefined' || !db.isConfigured()) {
-            tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Supabase belum dikonfigurasi.</td></tr>';
+            renderTable(STATIC_PRODUCTS, true);
             return;
         }
 
-        const products = await db.fetchProducts();
-        if (!products || products.length === 0) {
-            tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Belum ada produk.</td></tr>';
-            return;
-        }
+        const dbProducts = await db.fetchProducts();
+        // Jika DB kosong/error, tampilkan data statis dari katalog
+        const data = (dbProducts && dbProducts.length > 0) ? dbProducts : STATIC_PRODUCTS;
+        renderTable(data, !dbProducts || dbProducts.length === 0);
+    };
 
-        tableBody.innerHTML = '';
+    const renderTable = (products, isStatic = false) => {
+        if (isStatic) {
+            tableBody.innerHTML = `<tr><td colspan="5" style="text-align:center; color: #f39c12; padding: 0.5rem;">
+                <i class="fa-solid fa-circle-info"></i> Menampilkan data katalog statis. Produk yang ditambah via form akan masuk ke database Supabase.
+            </td></tr>`;
+        } else {
+            tableBody.innerHTML = '';
+        }
         products.forEach(p => {
             const tr = document.createElement('tr');
             tr.innerHTML = `
