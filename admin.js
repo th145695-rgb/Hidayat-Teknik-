@@ -70,75 +70,93 @@ document.addEventListener('DOMContentLoaded', () => {
         { id: 15, title: 'Geometric Balcony Guard',    category: 'modern',  category_label: 'Modern',      price: 1750000, image_url: 'assets/images/minimalist_window_trellis_1779491829216.png' },
     ];
 
-    // --- PRODUCT MANAGEMENT ---
+    // Mutable working copy of the product list
+    let activeProducts = [];
+    let activeIsStatic = false;
+
     const loadProducts = async () => {
         if (typeof db === 'undefined' || !db.isConfigured()) {
-            renderTable(STATIC_PRODUCTS, true);
+            activeProducts  = [...STATIC_PRODUCTS];
+            activeIsStatic  = true;
+            renderTable(activeProducts, true);
             return;
         }
 
         const dbProducts = await db.fetchProducts();
-        // Jika DB kosong/error, tampilkan data statis dari katalog
-        const data = (dbProducts && dbProducts.length > 0) ? dbProducts : STATIC_PRODUCTS;
-        renderTable(data, !dbProducts || dbProducts.length === 0);
+        if (dbProducts && dbProducts.length > 0) {
+            activeProducts = dbProducts;
+            activeIsStatic = false;
+        } else {
+            activeProducts = [...STATIC_PRODUCTS];
+            activeIsStatic = true;
+        }
+        renderTable(activeProducts, activeIsStatic);
     };
 
     const renderTable = (products, isStatic = false) => {
         if (isStatic) {
-            tableBody.innerHTML = `<tr><td colspan="5" style="text-align:center; color: #f39c12; padding: 0.5rem;">
-                <i class="fa-solid fa-circle-info"></i> Menampilkan data katalog statis. Produk yang ditambah via form akan masuk ke database Supabase.
+            tableBody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#f39c12; padding:0.5rem;">
+                <i class="fa-solid fa-circle-info"></i> Data katalog statis — perubahan hapus/edit hanya berlaku sementara di layar ini.
             </td></tr>`;
         } else {
             tableBody.innerHTML = '';
         }
+
         products.forEach(p => {
             const tr = document.createElement('tr');
+            tr.setAttribute('data-row-id', p.id);
             tr.innerHTML = `
-                <td><img src="${p.image_url}" alt="${p.title}"></td>
+                <td><img src="${p.image_url}" alt="${p.title}" onerror="this.src='assets/images/minimalist_window_trellis_1779491829216.png'"></td>
                 <td><strong>${p.title}</strong></td>
                 <td><span class="badge">${p.category_label}</span></td>
                 <td>Rp ${p.price.toLocaleString('id-ID')}</td>
-                <td>
-                    <button class="btn-edit" style="background:#f39c12; color:white; border:none; padding:0.5rem; border-radius:6px; cursor:pointer;" data-product='${JSON.stringify(p)}'><i class="fa-solid fa-pen"></i></button>
-                    <button class="btn-delete" data-id="${p.id}"><i class="fa-solid fa-trash"></i></button>
+                <td style="display:flex; gap:6px; align-items:center;">
+                    <button class="btn-edit" style="background:#f39c12;color:white;border:none;padding:0.5rem 0.7rem;border-radius:6px;cursor:pointer;" data-product='${JSON.stringify(p).replace(/'/g,"&#39;")}'>
+                        <i class="fa-solid fa-pen"></i>
+                    </button>
+                    <button class="btn-delete" style="background:#e74c3c;color:white;border:none;padding:0.5rem 0.7rem;border-radius:6px;cursor:pointer;" data-id="${p.id}">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
                 </td>
             `;
             tableBody.appendChild(tr);
         });
 
-        // Delete handlers
+        // ---- DELETE ----
         document.querySelectorAll('.btn-delete').forEach(btn => {
             btn.addEventListener('click', async (e) => {
-                const id = e.currentTarget.getAttribute('data-id');
-                if (confirm('Yakin ingin menghapus produk ini?')) {
+                const id = String(e.currentTarget.getAttribute('data-id'));
+                if (!confirm('Yakin ingin menghapus produk ini?')) return;
+
+                if (activeIsStatic) {
+                    // Hapus dari array lokal & render ulang tanpa reload
+                    activeProducts = activeProducts.filter(p => String(p.id) !== id);
+                    renderTable(activeProducts, true);
+                } else {
                     const res = await db.deleteProduct(id);
-                    if (res.success) loadProducts(); // Refresh tabel
+                    if (res.success) loadProducts();
                 }
             });
         });
 
-        // Edit handlers
+        // ---- EDIT ----
         document.querySelectorAll('.btn-edit').forEach(btn => {
             btn.addEventListener('click', (e) => {
-                const product = JSON.parse(e.currentTarget.getAttribute('data-product'));
-                
-                // Isi form dengan data produk
-                document.getElementById('p-id').value = product.id;
-                document.getElementById('p-title').value = product.title;
-                document.getElementById('p-price').value = product.price;
+                const product = JSON.parse(e.currentTarget.getAttribute('data-product').replace(/&#39;/g,"'"));
+
+                document.getElementById('p-id').value       = product.id;
+                document.getElementById('p-title').value    = product.title;
+                document.getElementById('p-price').value    = product.price;
                 document.getElementById('p-category').value = product.category;
-                
-                // Preview gambar lama
+
                 imgPreview.src = product.image_url;
                 imgPreview.style.display = 'block';
-                imgInput.removeAttribute('required'); // Foto opsional saat edit
+                imgInput.removeAttribute('required');
 
-                // Ubah UI Form
-                document.querySelector('#add-product-form h3').textContent = 'Edit Produk';
-                document.getElementById('btn-submit-product').innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Simpan Perubahan';
-                document.getElementById('btn-cancel-edit').style.display = 'block';
-                
-                // Scroll ke atas
+                document.querySelector('#add-product-form h3').textContent          = 'Edit Produk';
+                document.getElementById('btn-submit-product').innerHTML             = '<i class="fa-solid fa-floppy-disk"></i> Simpan Perubahan';
+                document.getElementById('btn-cancel-edit').style.display            = 'block';
+
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             });
         });
