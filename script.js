@@ -1151,11 +1151,11 @@ if (dropzone) {
             const dy = clientY - startY;
 
             if (isDragging) {
-                arOverlayCont.style.left = \`\${startLeft + dx}px\`;
-                arOverlayCont.style.top  = \`\${startTop + dy}px\`;
+                arOverlayCont.style.left = `${startLeft + dx}px`;
+                arOverlayCont.style.top  = `${startTop + dy}px`;
             } else if (isResizing) {
-                arOverlayCont.style.width  = \`\${Math.max(50, startW + dx)}px\`;
-                arOverlayCont.style.height = \`\${Math.max(50, startH + (dx * (startH/startW)))}px\`; // Maintain rough aspect ratio
+                arOverlayCont.style.width  = `${Math.max(50, startW + dx)}px`;
+                arOverlayCont.style.height = `${Math.max(50, startH + (dx * (startH/startW)))}px`; // Maintain rough aspect ratio
             }
         };
 

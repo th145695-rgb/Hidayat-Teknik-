@@ -36,7 +36,7 @@
     <section class="upload-section" style="padding-top:2rem">
         <div class="upload-container">
             <div class="upload-panel glass-upload">
-                <h3><span class="step-badge">1</span> Pilih Area &amp; Upload Foto</h3>
+                <h3><span class="step-badge">1</span> Pilih Area &amp; Lihat Simulasi</h3>
                 <div class="area-selector">
                     <label class="area-option">
                         <input type="radio" name="area-type" value="jendela" id="area-jendela">
@@ -105,30 +105,34 @@
                     </div>
                 </div>
 
-                <div class="upload-area" style="display:none;">
-                    <div class="dropzone" id="dropzone">
-                        <div class="dropzone-default" id="dropzone-default">
-                            <i class="fa-solid fa-cloud-arrow-up"></i>
-                            <p>Drag & drop foto di sini</p>
-                            <p>atau</p>
-                            <button class="btn btn-outline">Pilih Foto</button>
-                            <p class="upload-hint">Format: JPG, PNG, WEBP. Maks. 5MB</p>
-                        </div>
-                        <div class="dropzone-preview" id="dropzone-preview" style="display:none">
-                            <img id="preview-img" src="" alt="Preview">
-                            <button class="remove-photo-btn" id="remove-photo"><i class="fa-solid fa-times"></i> Ganti Foto</button>
-                        </div>
+                <div class="dropzone" id="dropzone">
+                    <div class="dropzone-default" id="dropzone-default">
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                        <p>Drag &amp; drop foto di sini</p>
+                        <span>atau</span>
+                        <label for="photo-upload" class="btn btn-outline upload-file-btn">Pilih Foto</label>
+                        <input type="file" id="photo-upload" accept="image/*" hidden>
+                        <p class="upload-hint">Format: JPG, PNG, WEBP. Maks. 5MB</p>
+                    </div>
+                    <div class="dropzone-preview" id="dropzone-preview" style="display:none">
+                        <img id="preview-img" src="" alt="Preview">
+                        <button class="remove-photo-btn" id="remove-photo"><i class="fa-solid fa-times"></i> Ganti Foto</button>
                     </div>
                 </div>
 
-                <div class="upload-notes-group" style="display:none;">
+                <div class="upload-notes-group">
                     <label for="upload-notes">Catatan Tambahan (opsional)</label>
                     <textarea id="upload-notes" placeholder="Contoh: ukuran perkiraan 120x150cm, budget sekitar Rp2 juta, suka motif minimalis..."></textarea>
                 </div>
 
-                <button class="btn btn-primary upload-submit-btn" id="btn-start-ar" style="width:100%; display: flex; justify-content: center; align-items: center; gap:0.5rem; background: #e67e22; margin-top: 1rem; cursor: pointer; padding: 1rem; border-radius: 8px; border: none; color: white; font-weight: bold; font-size: 1.1rem;">
-                    <i class="fa-solid fa-camera"></i> Buka Kamera AR (Preview)
-                </button>
+                <div style="display:flex; gap:10px; margin-top:1rem; flex-wrap:wrap;">
+                    <button class="btn btn-primary upload-submit-btn" id="upload-submit" disabled style="flex:1; min-width:180px;">
+                        <i class="fa-brands fa-google"></i> Cari Referensi (Upload)
+                    </button>
+                    <button class="btn btn-primary" id="btn-start-ar" style="flex:1; min-width:180px; background:#e67e22; border:none; color:white; font-weight:bold; border-radius:8px; padding:0.9rem 1rem; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:0.5rem; font-size:1rem;">
+                        <i class="fa-solid fa-camera"></i> Buka Kamera AR
+                    </button>
+                </div>
             </div>
 
             <div class="recommendation-panel" id="recommendation-panel">
