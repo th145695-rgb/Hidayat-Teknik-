@@ -123,7 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // ---- DELETE ----
-        document.querySelectorAll('.btn-delete').forEach(btn => {
+        tableBody.querySelectorAll('.btn-delete').forEach(btn => {
             btn.addEventListener('click', async (e) => {
                 const id = String(e.currentTarget.getAttribute('data-id'));
                 if (!confirm('Yakin ingin menghapus produk ini?')) return;
@@ -140,7 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // ---- EDIT ----
-        document.querySelectorAll('.btn-edit').forEach(btn => {
+        tableBody.querySelectorAll('.btn-edit').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const product = JSON.parse(e.currentTarget.getAttribute('data-product').replace(/&#39;/g,"'"));
 
