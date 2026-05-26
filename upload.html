@@ -125,39 +125,46 @@
                     <textarea id="upload-notes" placeholder="Contoh: ukuran perkiraan 120x150cm, budget sekitar Rp2 juta, suka motif minimalis..."></textarea>
                 </div>
 
-                <button class="btn btn-primary upload-submit-btn" id="upload-submit" disabled>
-                    <i class="fa-brands fa-google"></i> Cari Referensi di Google
+                <button class="btn btn-primary upload-submit-btn" id="btn-start-ar" style="width:100%; display: flex; justify-content: center; align-items: center; gap:0.5rem; background: #e67e22; margin-top: 1rem; cursor: pointer; padding: 1rem; border-radius: 8px; border: none; color: white; font-weight: bold; font-size: 1.1rem;">
+                    <i class="fa-solid fa-camera"></i> Buka Kamera AR (Preview)
                 </button>
             </div>
 
             <div class="recommendation-panel" id="recommendation-panel">
                 <div class="rec-idle" id="rec-idle">
-                    <i class="fa-solid fa-search"></i>
-                    <p>Rekomendasi dari katalog kami akan muncul di sini setelah foto, area, dan style dipilih.</p>
+                    <i class="fa-solid fa-camera"></i>
+                    <p>WebAR Kamera: Lihat langsung simulasi terali di jendela/pintu Anda.</p>
                 </div>
-                <div class="rec-loading" id="rec-loading" style="display:none">
-                    <div class="spinner"></div>
-                    <p>Mencari referensi terbaik dan menyiapkan rekomendasi...</p>
-                </div>
+                
                 <div class="rec-result" id="rec-result" style="display:none">
-                    <div class="rec-result-header">
-                        <i class="fa-solid fa-circle-check"></i>
-                        <div>
-                            <h3>Rekomendasi Desain</h3>
-                            <p id="rec-area-label">Berdasarkan pilihan area dan style Anda</p>
+                    <div class="rec-result-header" style="justify-content: space-between;">
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <i class="fa-solid fa-camera" style="color: #e67e22;"></i>
+                            <div>
+                                <h3>WebAR Preview</h3>
+                                <p>Geser & cubit untuk menyesuaikan ukuran</p>
+                            </div>
+                        </div>
+                        <button id="btn-stop-ar" style="background: #e74c3c; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer;"><i class="fa-solid fa-stop"></i> Tutup</button>
+                    </div>
+
+                    <div class="ar-container" style="position: relative; width: 100%; height: 60vh; background: #000; border-radius: 12px; overflow: hidden; margin-bottom: 2rem;">
+                        <video id="ar-video" autoplay playsinline style="width: 100%; height: 100%; object-fit: cover;"></video>
+                        <div id="ar-overlay-container" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 200px; height: auto; cursor: move; touch-action: none; border: 2px dashed rgba(241, 196, 15, 0.7); box-sizing: border-box;">
+                            <img id="ar-overlay-img" src="assets/images/minimalist_window_trellis_1779491829216.png" style="width: 100%; height: 100%; object-fit: contain; pointer-events: none;">
+                            <div id="ar-resize-handle" style="position: absolute; bottom: -10px; right: -10px; width: 25px; height: 25px; background: #f1c40f; border-radius: 50%; cursor: se-resize;"></div>
                         </div>
                     </div>
 
-                    <div class="ai-estimate-card" style="margin-bottom: 2rem; padding: 1rem; border-radius: 12px; overflow: hidden; background: #fff;">
-                        <iframe id="google-search-iframe" src="" style="width: 100%; height: 500px; border: none; border-radius: 8px;"></iframe>
+                    <h4 class="rec-products-title">Pilih Model Terali</h4>
+                    <div class="rec-products" id="ar-models" style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px;">
+                        <!-- JS will populate -->
                     </div>
-
-                    <h4 class="rec-products-title">Model katalog pendukung</h4>
-                    <div class="rec-products" id="rec-products"></div>
-                    <div class="rec-cta">
-                        <a href="https://wa.me/6281234567890?text=Halo+Hidayat+Teknik%2C+saya+ingin+konsultasi+desain+AI+terali"
-                           target="_blank" class="btn btn-whatsapp" id="ai-whatsapp-link">
-                            <i class="fa-brands fa-whatsapp"></i> Konsultasi
+                    
+                    <div class="rec-cta" style="margin-top: 1rem;">
+                        <a href="https://wa.me/6281234567890?text=Halo+Hidayat+Teknik%2C+saya+ingin+memesan+terali+seperti+di+AR+Preview"
+                           target="_blank" class="btn btn-whatsapp" style="width: 100%;">
+                            <i class="fa-brands fa-whatsapp"></i> Pesan Sekarang
                         </a>
                     </div>
                 </div>

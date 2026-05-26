@@ -1063,58 +1063,111 @@ if (dropzone) {
         });
     }
 
-    if (uploadSubmit) {
-        uploadSubmit.addEventListener('click', async () => {
-            if (!uploadedFile || !selectedArea) return;
+    const btnStartAr = $('btn-start-ar');
+    const btnStopAr  = $('btn-stop-ar');
+    const arVideo    = $('ar-video');
+    const arModels   = $('ar-models');
+    const arOverlayImg = $('ar-overlay-img');
+    const arOverlayCont = $('ar-overlay-container');
+    const arResizeHandle = $('ar-resize-handle');
+    let arStream = null;
+
+    if (btnStartAr) {
+        btnStartAr.addEventListener('click', async () => {
             recIdle.style.display    = 'none';
-            recResult.style.display  = 'none';
-            recLoading.style.display = 'flex';
-            uploadSubmit.disabled = true;
+            recResult.style.display  = 'block';
+            
+            // Populate models
+            if (arModels && products) {
+                arModels.innerHTML = products.map(p => `
+                    <div style="flex-shrink:0; width:70px; height:70px; border-radius:8px; overflow:hidden; border:2px solid #333; cursor:pointer;"
+                         onclick="document.getElementById('ar-overlay-img').src='${p.image}'">
+                        <img src="${p.image}" style="width:100%; height:100%; object-fit:cover;">
+                    </div>
+                `).join('');
+            }
 
             try {
-                await sleep(700);
-                
-                const areaName = selectedArea === 'semua' ? 'Rumah' : selectedArea;
-                const query = `Desain Terali ${areaName} ${selectedStyle}`;
-                const searchUrl = `https://www.google.com/search?tbm=isch&q=${encodeURIComponent(query)}&igu=1`;
-                
-                const googleIframe = document.getElementById('google-search-iframe');
-                if (googleIframe) {
-                    googleIframe.src = searchUrl;
-                }
-
-                showRecommendations(selectedArea, selectedStyle);
-
-                recLoading.style.display = 'none';
-                recResult.style.display = 'block';
-                validateUpload();
-
-                // Simpan ke Supabase
-                const recIds = (recommendations[selectedArea]?.ids) || [];
-                const baseNotes = uploadNotes ? uploadNotes.value.trim() : '';
-                const notesToSave = [
-                    baseNotes,
-                    `Referensi Google: ${query}`
-                ].filter(Boolean).join('\n');
-                
-                if (typeof db !== 'undefined' && db.isConfigured()) {
-                    db.savePhotoRequest({
-                        areaType:       selectedArea,
-                        file:           uploadedFile,
-                        notes:          notesToSave,
-                        recommendedIds: recIds,
-                        silent:         true
-                    });
-                }
+                arStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                arVideo.srcObject = arStream;
             } catch (err) {
-                console.error('[Google Reference] Gagal memuat rekomendasi:', err);
-                recLoading.style.display = 'none';
-                if (recIdle) recIdle.style.display = 'flex';
-                validateUpload();
-                if (typeof showToast !== 'undefined') showToast('Terjadi kesalahan. Coba lagi nanti.', 'error');
-                else alert('Terjadi kesalahan. Coba lagi nanti.');
+                console.error("Camera error:", err);
+                alert("Tidak dapat mengakses kamera. Pastikan memberikan izin akses.");
             }
         });
+    }
+
+    if (btnStopAr) {
+        btnStopAr.addEventListener('click', () => {
+            if (arStream) {
+                arStream.getTracks().forEach(t => t.stop());
+                arStream = null;
+            }
+            recResult.style.display = 'none';
+            recIdle.style.display   = 'flex';
+        });
+    }
+
+    // AR Overlay Drag & Resize Logic
+    if (arOverlayCont && arResizeHandle) {
+        let isDragging = false;
+        let isResizing = false;
+        let startX, startY;
+        let startW, startH, startLeft, startTop;
+
+        const pointerDown = (e) => {
+            if (e.target === arResizeHandle) {
+                isResizing = true;
+            } else {
+                isDragging = true;
+            }
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            
+            startX = clientX;
+            startY = clientY;
+            
+            const rect = arOverlayCont.getBoundingClientRect();
+            startW = rect.width;
+            startH = rect.height;
+            
+            const parentRect = arOverlayCont.parentElement.getBoundingClientRect();
+            startLeft = rect.left - parentRect.left + (startW/2);
+            startTop  = rect.top - parentRect.top + (startH/2);
+            
+            e.preventDefault(); // prevent scroll
+        };
+
+        const pointerMove = (e) => {
+            if (!isDragging && !isResizing) return;
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            
+            const dx = clientX - startX;
+            const dy = clientY - startY;
+
+            if (isDragging) {
+                arOverlayCont.style.left = \`\${startLeft + dx}px\`;
+                arOverlayCont.style.top  = \`\${startTop + dy}px\`;
+            } else if (isResizing) {
+                arOverlayCont.style.width  = \`\${Math.max(50, startW + dx)}px\`;
+                arOverlayCont.style.height = \`\${Math.max(50, startH + (dx * (startH/startW)))}px\`; // Maintain rough aspect ratio
+            }
+        };
+
+        const pointerUp = () => {
+            isDragging = false;
+            isResizing = false;
+        };
+
+        arOverlayCont.addEventListener('mousedown', pointerDown);
+        arOverlayCont.addEventListener('touchstart', pointerDown, {passive: false});
+        
+        window.addEventListener('mousemove', pointerMove);
+        window.addEventListener('touchmove', pointerMove, {passive: false});
+        
+        window.addEventListener('mouseup', pointerUp);
+        window.addEventListener('touchend', pointerUp);
     }
 }
 
