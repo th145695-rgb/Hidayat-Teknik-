@@ -1088,11 +1088,15 @@ if (dropzone) {
             }
 
             try {
-                arStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                // Use ideal: 'environment' so laptops with only front cameras don't throw an error
+                arStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } } });
                 arVideo.srcObject = arStream;
+                arVideo.play().catch(e => console.log("Auto-play prevented", e));
             } catch (err) {
                 console.error("Camera error:", err);
-                alert("Tidak dapat mengakses kamera. Pastikan memberikan izin akses.");
+                alert("Tidak dapat mengakses kamera. Cek izin browser atau gunakan HP.");
+                recResult.style.display = 'none';
+                recIdle.style.display   = 'flex';
             }
         });
     }
