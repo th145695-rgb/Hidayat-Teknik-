@@ -12,7 +12,7 @@
 // =============================================
 
 const SUPABASE_URL      = 'https://vflxakgedbjnceedshzd.supabase.co'; // Sudah diisi otomatis
-const SUPABASE_ANON_KEY = 'sb_publishable_CaTmr70c28scO49BY_DAag_ofvr1zob';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmaXhha2dlZGJqbmNlZWRzaHpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0NzY3NzgsImV4cCI6MjA5NTA1Mjc3OH0.qHkRXvpt7DGcNy6aeKaN5IUHVeUcRKav1ZFAdK3BGvQ';
 
 // Inisialisasi client (menggunakan Supabase CDN)
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
