@@ -1485,4 +1485,18 @@ if (bookingDate) {
 // ===============================
 document.addEventListener('DOMContentLoaded', () => {
     updateCartUI();
+    
+    // Before/After Slider Logic
+    const baContainer = document.getElementById('ba-container');
+    const baInput = document.getElementById('ba-input');
+    const baOverlay = document.getElementById('ba-overlay');
+    const baSlider = document.getElementById('ba-slider');
+
+    if (baContainer && baInput && baOverlay && baSlider) {
+        baInput.addEventListener('input', (e) => {
+            const val = e.target.value;
+            baOverlay.style.width = `${val}%`;
+            baSlider.style.left = `${val}%`;
+        });
+    }
 });
