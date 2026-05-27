@@ -278,30 +278,10 @@ if (ivModal) {
     $('iv-zoom-in')?.addEventListener('click',  () => { ivZoom = Math.min(3, +(ivZoom + 0.2).toFixed(1)); applyTransform(); });
     $('iv-zoom-out')?.addEventListener('click', () => { ivZoom = Math.max(0.3, +(ivZoom - 0.2).toFixed(1)); applyTransform(); });
 
-    document.querySelectorAll('.iv-color').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.iv-color').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            if (ivImg) {
-                const c = btn.dataset.color;
-                const tintFlood = $('tint-flood');
-                if (c === 'none') {
-                    ivImg.style.filter = 'none';
-                } else {
-                    if (tintFlood) tintFlood.setAttribute('flood-color', c);
-                    ivImg.style.filter = 'url(#tint-iron)';
-                }
-            }
-        });
-    });
-
     $('iv-reset')?.addEventListener('click', () => {
         ivRotation = 0; ivZoom = 1;
         applyTransform();
         if (ivImg) ivImg.style.filter = 'none';
-        document.querySelectorAll('.iv-color').forEach(b => b.classList.remove('active'));
-        const firstColor = document.querySelector('.iv-color');
-        if (firstColor) firstColor.classList.add('active');
     });
 
     $('iv-cart-btn')?.addEventListener('click', () => {

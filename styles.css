@@ -2219,24 +2219,6 @@ ul {
     font-weight: 600;
 }
 
-/* Colour swatches */
-.iv-colors {
-    display: flex;
-    gap: 7px;
-    flex-wrap: wrap;
-    align-items: center;
-}
-.iv-color {
-    width: 26px; height: 26px;
-    border-radius: 50%;
-    border: 2px solid transparent;
-    cursor: pointer;
-    transition: border-color 0.2s, transform 0.15s;
-    flex-shrink: 0;
-}
-.iv-color:hover   { transform: scale(1.15); }
-.iv-color.active  { border-color: var(--primary-color); transform: scale(1.2); }
-
 /* Footer */
 .iv-footer {
     display: flex;

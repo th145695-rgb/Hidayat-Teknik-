@@ -97,14 +97,6 @@
         </div>
     </div>
 
-    <!-- SVG Filter for tinting ONLY dark pixels (iron) -->
-    <svg width="0" height="0" style="position:absolute;">
-        <filter id="tint-iron">
-            <feFlood flood-color="transparent" result="COLOR" id="tint-flood" />
-            <feBlend mode="lighten" in="COLOR" in2="SourceGraphic" />
-        </filter>
-    </svg>
-
     <!-- ===== INTERACTIVE VIEWER MODAL ===== -->
     <div class="iv-overlay" id="iv-overlay"></div>
     <div class="iv-modal" id="iv-modal" role="dialog" aria-modal="true" aria-label="Interactive Viewer">
@@ -139,19 +131,6 @@
                     <button class="iv-btn" id="iv-zoom-out" title="Perkecil"><i class="fa-solid fa-minus"></i></button>
                     <span class="iv-val" id="iv-zoom-val">100%</span>
                     <button class="iv-btn" id="iv-zoom-in"  title="Perbesar"><i class="fa-solid fa-plus"></i></button>
-                </div>
-            </div>
-            <!-- Color -->
-            <div class="iv-ctrl-group">
-                <span class="iv-ctrl-label"><i class="fa-solid fa-palette"></i> Warna</span>
-                <div class="iv-colors">
-                    <button class="iv-color active"  data-color="none"       style="background:#1a1a1a" title="Original"></button>
-                    <button class="iv-color"         data-color="#9a7b2b"   style="background:#b8860b" title="Gold / Emas"></button>
-                    <button class="iv-color"         data-color="#2a4d69"   style="background:#4a7fa5" title="Biru"></button>
-                    <button class="iv-color"         data-color="#2d5a2d"   style="background:#4a8a4a" title="Hijau"></button>
-                    <button class="iv-color"         data-color="#702030"   style="background:#a54a7f" title="Merah Marun"></button>
-                    <button class="iv-color"         data-color="#555555"   style="background:#aaa"    title="Abu-abu"></button>
-                    <button class="iv-color"         data-color="#888888"   style="background:#e8e8e8" title="Putih"></button>
                 </div>
             </div>
         </div>
