@@ -2349,3 +2349,45 @@ ul {
     color: var(--primary-color);
     flex-shrink: 0;
 }
+
+/* ================================================
+   FAVORITES
+   ================================================ */
+.fav-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: rgba(26, 29, 36, 0.7);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #fff;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    backdrop-filter: blur(4px);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    z-index: 10;
+    opacity: 0;
+    transform: translateY(-10px);
+}
+.product-img-wrapper:hover .fav-btn {
+    opacity: 1;
+    transform: translateY(0);
+}
+.fav-btn:hover {
+    background: rgba(26, 29, 36, 0.9);
+    transform: scale(1.1) !important;
+}
+.fav-btn.active {
+    opacity: 1;
+    transform: translateY(0);
+    color: #e74c3c;
+    border-color: rgba(231,76,60,0.5);
+    background: rgba(231,76,60,0.15);
+}
+.fav-btn.active i {
+    text-shadow: 0 0 10px rgba(231,76,60,0.6);
+}

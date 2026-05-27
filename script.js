@@ -149,13 +149,46 @@ window.removeFromCart = (productId) => {
 // ===============================
 const productsContainer = $('products-container');
 
+let favorites = JSON.parse(localStorage.getItem('ht_favorites')) || [];
+
+window.toggleFavorite = (id, event) => {
+    if (event) event.stopPropagation();
+    const idx = favorites.indexOf(id);
+    if (idx === -1) {
+        favorites.push(id);
+    } else {
+        favorites.splice(idx, 1);
+    }
+    localStorage.setItem('ht_favorites', JSON.stringify(favorites));
+    
+    const activeFilterBtn = document.querySelector('.filter-btn.active');
+    const category = activeFilterBtn ? activeFilterBtn.dataset.filter : 'all';
+    renderProducts(category);
+};
+
 const renderProducts = (category = 'all') => {
     if (!productsContainer) return;
-    const list = category === 'all' ? products : products.filter(p => p.category === category);
-    productsContainer.innerHTML = list.map(p => `
+    
+    let list = products;
+    if (category === 'favorites') {
+        list = products.filter(p => favorites.includes(p.id));
+        if (list.length === 0) {
+            productsContainer.innerHTML = `<div style="grid-column: 1/-1; text-align:center; padding: 4rem 1rem; color: var(--text-secondary);"><i class="fa-regular fa-heart" style="font-size:3rem; margin-bottom:1rem; opacity:0.5;"></i><br>Anda belum menyimpan desain favorit apapun.</div>`;
+            return;
+        }
+    } else if (category !== 'all') {
+        list = products.filter(p => p.category === category);
+    }
+    
+    productsContainer.innerHTML = list.map(p => {
+        const isFav = favorites.includes(p.id);
+        return `
         <div class="product-card">
             <div class="product-img-wrapper" style="cursor:pointer;" onclick="openViewer(${p.id})">
                 <img src="${p.image}" alt="${p.title}" class="product-img">
+                <button class="fav-btn ${isFav ? 'active' : ''}" onclick="toggleFavorite(${p.id}, event)" title="Simpan ke Favorit">
+                    <i class="${isFav ? 'fa-solid' : 'fa-regular'} fa-heart"></i>
+                </button>
                 <div class="iv-hover-hint"><i class="fa-solid fa-eye"></i> Lihat Detail</div>
             </div>
             <div class="product-details">
@@ -172,7 +205,7 @@ const renderProducts = (category = 'all') => {
                 </div>
             </div>
         </div>
-    `).join('');
+    `}).join('');
 };
 
 if (productsContainer) {
