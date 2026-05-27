@@ -7,214 +7,297 @@
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        .admin-container {
-            max-width: 800px;
-            margin: 120px auto 50px;
-            padding: 2rem;
-            background: var(--card-bg);
-            border: 1px solid rgba(255,255,255,0.05);
-            border-radius: 20px;
-            backdrop-filter: blur(10px);
-        }
-        .admin-header {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-        .admin-header h2 {
-            color: var(--primary-color);
-            font-family: 'Playfair Display', serif;
-            font-size: 2.5rem;
-        }
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            color: var(--text-color);
-        }
-        .form-group input, .form-group select {
-            width: 100%;
-            padding: 1rem;
-            background: rgba(0,0,0,0.3);
-            border: 1px solid rgba(255,255,255,0.1);
-            color: white;
-            border-radius: 8px;
-            font-family: 'Inter', sans-serif;
-        }
-        .admin-btn {
-            width: 100%;
-            padding: 1rem;
-            background: var(--primary-color);
-            color: #000;
-            border: none;
-            border-radius: 8px;
-            font-weight: 700;
-            font-size: 1.1rem;
-            cursor: pointer;
-            transition: 0.3s ease;
-        }
-        .admin-btn:hover {
-            background: var(--primary-hover);
-        }
-        #image-preview {
-            max-width: 200px;
-            margin-top: 10px;
-            border-radius: 8px;
-            display: none;
-        }
-
-        /* --- LOGIN & DASHBOARD STYLES --- */
+        body { margin: 0; overflow-x: hidden; background: #0f1115; }
+        
+        /* --- LOGIN SECTION --- */
         #login-section {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: var(--bg-primary);
-            z-index: 9999;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: #0f1115; z-index: 9999;
+            display: flex; align-items: center; justify-content: center;
         }
         .login-box {
-            background: var(--card-bg);
-            padding: 3rem;
-            border-radius: 16px;
-            border: 1px solid var(--glass-border);
-            text-align: center;
-            width: 100%;
-            max-width: 400px;
+            background: #1a1d24; padding: 3rem; border-radius: 16px;
+            border: 1px solid rgba(197,155,75,0.2); text-align: center; width: 100%; max-width: 400px;
         }
-        .login-box h2 { margin-bottom: 1.5rem; color: var(--primary-color); }
         .login-box input {
             width: 100%; padding: 1rem; margin-bottom: 1rem;
-            background: rgba(0,0,0,0.5); border: 1px solid var(--glass-border);
-            color: #fff; border-radius: 8px; text-align: center; font-size: 1.2rem;
-            letter-spacing: 2px;
+            background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1);
+            color: #fff; border-radius: 8px; font-size: 1rem;
         }
-        #admin-content {
-            display: none;
-        }
+        .admin-btn { width: 100%; padding: 1rem; background: var(--primary-color); color: #000; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; }
+
+        /* --- LAYOUT --- */
+        #admin-wrapper { display: none; height: 100vh; display: flex; }
         
-        /* --- PRODUCT TABLE --- */
-        .admin-table-wrapper {
-            margin-top: 3rem;
-            overflow-x: auto;
+        /* SIDEBAR */
+        .admin-sidebar {
+            width: 260px; background: #1a1d24; border-right: 1px solid rgba(255,255,255,0.05);
+            display: flex; flex-direction: column; height: 100vh; position: fixed; left: 0; top: 0;
         }
-        .admin-table {
-            width: 100%;
-            border-collapse: collapse;
-            color: var(--text-color);
+        .sidebar-brand { padding: 2rem 1.5rem; display: flex; align-items: center; gap: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .sidebar-brand img { height: 30px; }
+        .sidebar-brand span { font-weight: 700; color: #fff; font-size: 1.1rem; }
+        
+        .sidebar-menu { padding: 1.5rem 0; flex: 1; }
+        .sidebar-link {
+            display: flex; align-items: center; gap: 1rem; padding: 1rem 1.5rem;
+            color: var(--text-secondary); text-decoration: none; transition: 0.3s;
+            border-left: 3px solid transparent; cursor: pointer;
         }
-        .admin-table th, .admin-table td {
-            padding: 1rem;
-            text-align: left;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+        .sidebar-link:hover, .sidebar-link.active {
+            color: var(--primary-color); background: rgba(197,155,75,0.05);
+            border-left-color: var(--primary-color);
         }
-        .admin-table th { color: var(--primary-color); font-weight: 600; }
-        .admin-table img { width: 60px; height: 60px; object-fit: cover; border-radius: 8px; }
-        .btn-delete {
-            background: #e74c3c; color: white; border: none; padding: 0.5rem 1rem;
-            border-radius: 6px; cursor: pointer; transition: 0.3s;
+        .sidebar-footer { padding: 1.5rem; border-top: 1px solid rgba(255,255,255,0.05); }
+        .logout-btn { color: #e74c3c; display: flex; align-items: center; gap: 0.5rem; cursor: pointer; }
+
+        /* MAIN CONTENT */
+        .admin-main { flex: 1; margin-left: 260px; padding: 2.5rem; overflow-y: auto; height: 100vh; }
+        .view-section { display: none; animation: fadeIn 0.4s; }
+        .view-section.active { display: block; }
+        
+        .page-header { margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; }
+        .page-header h1 { font-family: var(--font-heading); font-size: 2rem; color: var(--primary-color); }
+        
+        /* DASHBOARD CARDS */
+        .dash-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem; }
+        .dash-card { background: #1a1d24; border: 1px solid rgba(255,255,255,0.05); padding: 1.5rem; border-radius: 12px; display: flex; align-items: center; gap: 1rem; }
+        .dash-card-icon { width: 50px; height: 50px; border-radius: 12px; background: rgba(197,155,75,0.1); color: var(--primary-color); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+        .dash-card-info h3 { font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.3rem; }
+        .dash-card-info p { font-size: 1.5rem; font-weight: 700; color: #fff; }
+        
+        .chart-container { background: #1a1d24; border: 1px solid rgba(255,255,255,0.05); padding: 1.5rem; border-radius: 12px; margin-bottom: 2.5rem; }
+        
+        /* TABLES & FORMS */
+        .admin-panel { background: #1a1d24; border: 1px solid rgba(255,255,255,0.05); padding: 2rem; border-radius: 12px; margin-bottom: 2rem; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        .form-group { margin-bottom: 1.5rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; color: var(--text-secondary); font-size: 0.9rem; }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%; padding: 0.8rem 1rem; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1);
+            color: white; border-radius: 8px; font-family: var(--font-body);
         }
-        .btn-delete:hover { background: #c0392b; }
+        .form-group input:focus { border-color: var(--primary-color); outline: none; }
+        
+        table.data-table { width: 100%; border-collapse: collapse; text-align: left; }
+        .data-table th { padding: 1rem; border-bottom: 1px solid rgba(197,155,75,0.3); color: var(--primary-color); font-weight: 600; }
+        .data-table td { padding: 1rem; border-bottom: 1px solid rgba(255,255,255,0.05); color: var(--text-color); vertical-align: middle; }
+        .data-table tr:hover { background: rgba(255,255,255,0.02); }
+        .status-badge { padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
+        .status-badge.success { background: rgba(46, 204, 113, 0.15); color: #2ecc71; border: 1px solid rgba(46,204,113,0.3); }
+        .status-badge.warning { background: rgba(241, 196, 15, 0.15); color: #f1c40f; border: 1px solid rgba(241,196,15,0.3); }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="logo"><a href="index.html" style="color:inherit;text-decoration:none; display:flex; align-items:center; gap:0.5rem;"><img src="assets/images/logo.png" alt="Hidayat Teknik" style="height: 40px; width: auto; object-fit: contain; vertical-align: middle;"> <span style="font-weight:700; letter-spacing:1px; font-size:1.2rem;">Hidayat Teknik.</span></a></div>
-            <ul class="nav-links">
-                <li><a href="index.html">Beranda</a></li>
-                <li><a href="katalog.html">Katalog</a></li>
-            </ul>
-        </div>
-    </nav>
-
     <!-- LOGIN SECTION -->
     <div id="login-section">
         <div class="login-box">
-            <h2><i class="fa-solid fa-lock"></i> Login Admin</h2>
-            <p style="margin-bottom: 1rem; color: #888;">Gunakan email & password admin Supabase</p>
+            <h2 style="color:var(--primary-color); margin-bottom:1rem;"><i class="fa-solid fa-shield-halved"></i> Admin Portal</h2>
+            <p style="color:#888; margin-bottom:2rem;">Silakan login untuk mengelola sistem</p>
             <form id="login-form">
-                <input type="email" id="admin-email" placeholder="Email" required style="letter-spacing: normal; text-align: left;">
-                <input type="password" id="admin-password" placeholder="Password" required style="letter-spacing: normal; text-align: left;">
-                <button type="submit" class="admin-btn" id="btn-login">Masuk</button>
+                <input type="email" id="admin-email" placeholder="Email Address" required>
+                <input type="password" id="admin-password" placeholder="Password" required>
+                <button type="submit" class="admin-btn" id="btn-login">Login Akses</button>
             </form>
             <p id="login-error" style="color: #e74c3c; margin-top: 1rem; display: none;"></p>
         </div>
     </div>
 
-    <!-- DASHBOARD SECTION -->
-    <div id="admin-content">
-        <div class="admin-container">
-            <div class="admin-header" style="position: relative;">
-                <h2><i class="fa-solid fa-gauge"></i> Dasbor Admin</h2>
-                <p>Kelola produk langsung dari browser Anda.</p>
-                <button id="btn-logout" style="position: absolute; top: 0; right: 0; background: rgba(231,76,60,0.15); color: #e74c3c; border: 1px solid #e74c3c; padding: 0.5rem 1.2rem; border-radius: 8px; cursor: pointer; font-size: 0.9rem;">
+    <!-- MAIN APP -->
+    <div id="admin-wrapper" style="display:none;">
+        <!-- SIDEBAR -->
+        <aside class="admin-sidebar">
+            <div class="sidebar-brand">
+                <img src="assets/images/logo.png" alt="Logo">
+                <span>Hidayat Teknik.</span>
+            </div>
+            <div class="sidebar-menu">
+                <div class="sidebar-link active" data-target="view-dashboard">
+                    <i class="fa-solid fa-chart-pie"></i> Dashboard
+                </div>
+                <div class="sidebar-link" data-target="view-products">
+                    <i class="fa-solid fa-boxes-stacked"></i> Kelola Produk
+                </div>
+                <div class="sidebar-link" data-target="view-customers">
+                    <i class="fa-solid fa-users"></i> Kelola Customer
+                </div>
+                <a href="index.html" class="sidebar-link" style="margin-top:2rem;">
+                    <i class="fa-solid fa-globe"></i> Lihat Website
+                </a>
+            </div>
+            <div class="sidebar-footer">
+                <div class="logout-btn" id="btn-logout">
                     <i class="fa-solid fa-right-from-bracket"></i> Logout
-                </button>
+                </div>
             </div>
+        </aside>
 
-            <form id="add-product-form">
-                <h3 style="margin-bottom: 1rem; color: var(--primary-color);">Tambah Produk Baru</h3>
-                <div class="form-group">
-                    <label>Nama Produk</label>
-                    <input type="text" id="p-title" required placeholder="Contoh: Terali Jendela Minimalis">
+        <!-- CONTENT -->
+        <main class="admin-main">
+            
+            <!-- DASHBOARD VIEW -->
+            <section id="view-dashboard" class="view-section active">
+                <div class="page-header">
+                    <h1>Ringkasan Bisnis</h1>
+                    <p style="color:var(--text-secondary);">Data diperbarui secara real-time</p>
+                </div>
+                
+                <div class="dash-cards">
+                    <div class="dash-card">
+                        <div class="dash-card-icon"><i class="fa-solid fa-cart-shopping"></i></div>
+                        <div class="dash-card-info">
+                            <h3>Total Pesanan</h3>
+                            <p>124</p>
+                        </div>
+                    </div>
+                    <div class="dash-card">
+                        <div class="dash-card-icon" style="color:#2ecc71; background: rgba(46,204,113,0.1);"><i class="fa-solid fa-wallet"></i></div>
+                        <div class="dash-card-info">
+                            <h3>Total Pendapatan</h3>
+                            <p>Rp 185,5 Jt</p>
+                        </div>
+                    </div>
+                    <div class="dash-card">
+                        <div class="dash-card-icon" style="color:#e74c3c; background: rgba(231,76,60,0.1);"><i class="fa-solid fa-fire"></i></div>
+                        <div class="dash-card-info">
+                            <h3>Produk Terlaris</h3>
+                            <p style="font-size:1.1rem; margin-top:0.4rem;">Geometric Door</p>
+                        </div>
+                    </div>
+                    <div class="dash-card">
+                        <div class="dash-card-icon" style="color:#3498db; background: rgba(52,152,219,0.1);"><i class="fa-solid fa-users"></i></div>
+                        <div class="dash-card-info">
+                            <h3>Total Pelanggan</h3>
+                            <p>89</p>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="form-group">
-                    <label>Harga (Rupiah)</label>
-                    <input type="number" id="p-price" required placeholder="Contoh: 1500000">
+                <div class="chart-container">
+                    <h3 style="margin-bottom:1.5rem;">Grafik Penjualan (6 Bulan Terakhir)</h3>
+                    <canvas id="salesChart" height="80"></canvas>
+                </div>
+            </section>
+
+            <!-- KELOLA PRODUK VIEW -->
+            <section id="view-products" class="view-section">
+                <div class="page-header">
+                    <h1>Kelola Produk</h1>
+                </div>
+                
+                <div class="admin-panel">
+                    <h3 style="margin-bottom: 1.5rem; color: var(--primary-color);"><i class="fa-solid fa-plus"></i> Tambah / Ubah Produk</h3>
+                    <form id="add-product-form">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Nama / Model Produk</label>
+                                <input type="text" id="p-title" required placeholder="Contoh: Terali Minimalis">
+                            </div>
+                            <div class="form-group">
+                                <label>Kategori</label>
+                                <select id="p-category" required>
+                                    <option value="jendela">Jendela</option>
+                                    <option value="pintu">Pintu Utama</option>
+                                    <option value="klasik">Klasik</option>
+                                    <option value="modern">Modern</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Harga (Rupiah)</label>
+                                <input type="number" id="p-price" required placeholder="1500000">
+                            </div>
+                            <div class="form-group">
+                                <label>Stok Bahan (Meter/Pcs)</label>
+                                <input type="number" id="p-stock" required placeholder="Contoh: 50" value="50">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Foto Produk</label>
+                            <input type="file" id="p-image" accept="image/*">
+                        </div>
+                        <input type="hidden" id="p-id">
+                        <button type="submit" class="admin-btn" style="width:auto; padding: 0.8rem 2rem;">Simpan Data</button>
+                    </form>
                 </div>
 
-                <div class="form-group">
-                    <label>Kategori</label>
-                    <select id="p-category" required>
-                        <option value="jendela">Jendela</option>
-                        <option value="pintu">Pintu Utama</option>
-                        <option value="klasik">Klasik</option>
-                        <option value="modern">Modern / Balkon</option>
-                    </select>
+                <div class="admin-panel" style="padding:0; overflow:hidden;">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Foto</th>
+                                <th>Nama Model</th>
+                                <th>Harga</th>
+                                <th>Stok Bahan</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="product-table-body">
+                            <tr><td colspan="5" style="text-align:center; padding:2rem;">Memuat data...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- KELOLA CUSTOMER VIEW -->
+            <section id="view-customers" class="view-section">
+                <div class="page-header">
+                    <h1>Kelola Customer</h1>
                 </div>
 
-                <div class="form-group">
-                    <label>Foto Produk (Maks 5MB)</label>
-                    <input type="file" id="p-image" accept="image/*" required>
-                    <img id="image-preview" src="" alt="Preview">
+                <div class="admin-panel" style="padding:0; overflow:hidden;">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Data Pelanggan</th>
+                                <th>Histori Order</th>
+                                <th>Alamat Pemasangan</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="customer-table-body">
+                            <!-- Dummy Data for display as requested -->
+                            <tr>
+                                <td>
+                                    <strong>Bpk. Budi Santoso</strong><br>
+                                    <span style="color:#888; font-size:0.85rem;">0812-3456-7890</span>
+                                </td>
+                                <td>INV-HT-8291<br><span style="color:var(--primary-color); font-size:0.85rem;">Terali Jendela Minimalis</span></td>
+                                <td>Jl. Merdeka No. 45, Jakarta Selatan</td>
+                                <td><span class="status-badge warning">Fabrikasi</span></td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <strong>Ibu Siti Aminah</strong><br>
+                                    <span style="color:#888; font-size:0.85rem;">0856-7890-1234</span>
+                                </td>
+                                <td>INV-HT-1042<br><span style="color:var(--primary-color); font-size:0.85rem;">Pintu Utama Klasik</span></td>
+                                <td>Perum Indah Blok B/12, Depok</td>
+                                <td><span class="status-badge success">Selesai</span></td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <strong>Bpk. Hendra</strong><br>
+                                    <span style="color:#888; font-size:0.85rem;">0821-9988-7766</span>
+                                </td>
+                                <td>INV-HT-5533<br><span style="color:var(--primary-color); font-size:0.85rem;">Balkon Kaca Modern</span></td>
+                                <td>Jl. Sudirman Kav 10, Tangerang</td>
+                                <td><span class="status-badge warning">Survey</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
+            </section>
 
-                <div class="form-group" style="display: none;" id="edit-id-group">
-                    <input type="hidden" id="p-id">
-                </div>
-
-                <button type="submit" class="admin-btn" id="btn-submit-product"><i class="fa-solid fa-cloud-arrow-up"></i> Simpan Produk</button>
-                <button type="button" class="btn-cancel" id="btn-cancel-edit" style="display:none; width: 100%; margin-top: 10px; padding: 1rem; background: #95a5a6; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">Batal Edit</button>
-            </form>
-
-            <div class="admin-table-wrapper">
-                <h3 style="margin-bottom: 1rem; color: var(--primary-color);">Daftar Produk Aktif</h3>
-                <table class="admin-table">
-                    <thead>
-                        <tr>
-                            <th>Foto</th>
-                            <th>Nama Produk</th>
-                            <th>Kategori</th>
-                            <th>Harga</th>
-                            <th>Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody id="product-table-body">
-                        <tr><td colspan="5" style="text-align: center;">Memuat data...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+        </main>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase.js"></script>
-    <script src="admin.js?v=3"></script>
+    <script src="admin.js"></script>
 </body>
 </html>
