@@ -283,8 +283,14 @@ if (ivModal) {
             document.querySelectorAll('.iv-color').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             if (ivImg) {
-                const f = btn.dataset.filter;
-                ivImg.style.filter = (f === 'none') ? 'none' : f;
+                const c = btn.dataset.color;
+                const tintFlood = $('tint-flood');
+                if (c === 'none') {
+                    ivImg.style.filter = 'none';
+                } else {
+                    if (tintFlood) tintFlood.setAttribute('flood-color', c);
+                    ivImg.style.filter = 'url(#tint-iron)';
+                }
             }
         });
     });
