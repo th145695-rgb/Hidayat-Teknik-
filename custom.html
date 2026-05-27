@@ -81,7 +81,53 @@
                 <h3>Estimasi Harga</h3>
                 <div class="price-display" id="calc-result-price">Rp 0</div>
                 <div class="price-details" id="calc-result-details">Silakan masukkan ukuran (Lebar &amp; Tinggi) untuk melihat estimasi harga.</div>
-                <button class="btn btn-primary calc-submit-btn" id="calc-add-to-cart" disabled>
+
+                <!-- ===== ESTIMASI WAKTU PENGERJAAN ===== -->
+                <div class="time-estimate-box" id="time-estimate-box" style="display:none;">
+                    <div class="time-estimate-header">
+                        <i class="fa-solid fa-clock"></i>
+                        <span>Estimasi Waktu Pengerjaan</span>
+                        <div class="time-total-badge" id="time-total-badge">— hari</div>
+                    </div>
+                    <div class="time-stages">
+                        <div class="time-stage">
+                            <div class="stage-icon"><i class="fa-solid fa-ruler-combined"></i></div>
+                            <div class="stage-info">
+                                <span class="stage-name">Survey &amp; Ukur</span>
+                                <span class="stage-days" id="stage-survey">1 hari kerja</span>
+                            </div>
+                            <div class="stage-bar"><div class="stage-bar-fill" id="bar-survey"></div></div>
+                        </div>
+                        <div class="time-stage">
+                            <div class="stage-icon"><i class="fa-solid fa-industry"></i></div>
+                            <div class="stage-info">
+                                <span class="stage-name">Fabrikasi</span>
+                                <span class="stage-days" id="stage-fabrikasi">— hari kerja</span>
+                            </div>
+                            <div class="stage-bar"><div class="stage-bar-fill" id="bar-fabrikasi"></div></div>
+                        </div>
+                        <div class="time-stage">
+                            <div class="stage-icon"><i class="fa-solid fa-paint-roller"></i></div>
+                            <div class="stage-info">
+                                <span class="stage-name">Finishing &amp; Cat</span>
+                                <span class="stage-days" id="stage-finishing">— hari kerja</span>
+                            </div>
+                            <div class="stage-bar"><div class="stage-bar-fill" id="bar-finishing"></div></div>
+                        </div>
+                        <div class="time-stage">
+                            <div class="stage-icon"><i class="fa-solid fa-screwdriver-wrench"></i></div>
+                            <div class="stage-info">
+                                <span class="stage-name">Instalasi</span>
+                                <span class="stage-days" id="stage-instalasi">1 hari kerja</span>
+                            </div>
+                            <div class="stage-bar"><div class="stage-bar-fill" id="bar-instalasi"></div></div>
+                        </div>
+                    </div>
+                    <p class="time-note"><i class="fa-solid fa-circle-info"></i> Estimasi hari kerja, tidak termasuk hari Minggu &amp; libur nasional.</p>
+                </div>
+                <!-- ======================================= -->
+
+                <button class="btn btn-primary calc-submit-btn" id="calc-add-to-cart" disabled style="margin-top:1rem;">
                     <i class="fa-solid fa-cart-plus"></i> Pesan Custom Ini
                 </button>
                 <a href="booking.html" class="btn btn-outline" style="margin-top:0.75rem;display:flex;align-items:center;justify-content:center;gap:0.5rem">

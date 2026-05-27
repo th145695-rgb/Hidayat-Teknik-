@@ -255,6 +255,53 @@ if (calcLebar && calcTinggi) {
         calcDetails.innerHTML = detail;
         calcCartBtn.disabled = false;
 
+        // ===== ESTIMASI WAKTU PENGERJAAN =====
+        const timeBox        = $('time-estimate-box');
+        const timeBadge      = $('time-total-badge');
+        const stageSurvey    = $('stage-survey');
+        const stageFabrikasi = $('stage-fabrikasi');
+        const stageFinishing = $('stage-finishing');
+        const stageInstalasi = $('stage-instalasi');
+        const barSurvey      = $('bar-survey');
+        const barFabrikasi   = $('bar-fabrikasi');
+        const barFinishing   = $('bar-finishing');
+        const barInstalasi   = $('bar-instalasi');
+
+        if (timeBox) {
+            // Base fabrication: 2 days/m², min 2 days
+            let fabDays = Math.max(2, Math.ceil(luas * 2));
+            // Material modifier
+            if (calcJenis.value === 'nako_solid') fabDays += 1;
+            else if (calcJenis.value === 'tempa')  fabDays += 3;
+            // Design complexity modifier
+            if (calcMotif.value === 'geometris')   fabDays += 1;
+            else if (calcMotif.value === 'klasik') fabDays += 2;
+
+            // Finishing days
+            const finDays = calcJenis.value === 'tempa' ? 2 : 1;
+            // Fixed stages
+            const surveyDays  = 1;
+            const instDays    = 1;
+            const totalDays   = surveyDays + fabDays + finDays + instDays;
+            const maxDays     = totalDays; // for bar width calculation
+
+            const pct = (d) => `${Math.round((d / maxDays) * 100)}%`;
+
+            stageSurvey.textContent    = `${surveyDays} hari kerja`;
+            stageFabrikasi.textContent = `${fabDays} hari kerja`;
+            stageFinishing.textContent = `${finDays} hari kerja`;
+            stageInstalasi.textContent = `${instDays} hari kerja`;
+            timeBadge.textContent      = `~${totalDays} hari kerja`;
+
+            if (barSurvey)    { barSurvey.style.width    = '0'; setTimeout(() => barSurvey.style.width    = pct(surveyDays),  50); }
+            if (barFabrikasi) { barFabrikasi.style.width = '0'; setTimeout(() => barFabrikasi.style.width = pct(fabDays),     150); }
+            if (barFinishing) { barFinishing.style.width = '0'; setTimeout(() => barFinishing.style.width = pct(finDays),     250); }
+            if (barInstalasi) { barInstalasi.style.width = '0'; setTimeout(() => barInstalasi.style.width = pct(instDays),    350); }
+
+            timeBox.style.display = 'block';
+        }
+        // =====================================================
+
         currentCustomProduct = {
             id: 'custom_' + Date.now(),
             title: `Custom Terali (${lebar}×${tinggi}cm)`,
