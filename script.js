@@ -154,16 +154,22 @@ const renderProducts = (category = 'all') => {
     const list = category === 'all' ? products : products.filter(p => p.category === category);
     productsContainer.innerHTML = list.map(p => `
         <div class="product-card">
-            <div class="product-img-wrapper">
+            <div class="product-img-wrapper" style="cursor:pointer;" onclick="openViewer(${p.id})">
                 <img src="${p.image}" alt="${p.title}" class="product-img">
+                <div class="iv-hover-hint"><i class="fa-solid fa-eye"></i> Lihat Detail</div>
             </div>
             <div class="product-details">
                 <div class="product-category">${p.categoryLabel}</div>
                 <h3 class="product-title">${p.title}</h3>
                 <div class="product-price">${formatIDR(p.price)}</div>
-                <button class="add-to-cart-btn" onclick="addToCart(${p.id})">
-                    <i class="fa-solid fa-cart-plus"></i> Tambah ke Keranjang
-                </button>
+                <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:0.5rem;">
+                    <button class="add-to-cart-btn" style="flex:1;" onclick="addToCart(${p.id})">
+                        <i class="fa-solid fa-cart-plus"></i> Keranjang
+                    </button>
+                    <button class="add-to-cart-btn" style="flex:1; background: rgba(197,155,75,0.15); border-color: rgba(197,155,75,0.4);" onclick="openViewer(${p.id})">
+                        <i class="fa-solid fa-eye"></i> Lihat
+                    </button>
+                </div>
             </div>
         </div>
     `).join('');
@@ -204,6 +210,97 @@ if (productsContainer) {
         renderProducts();
     };
     initProducts();
+}
+
+// ===============================
+// INTERACTIVE VIEWER (katalog.html)
+// ===============================
+let ivRotation = 0;
+let ivZoom     = 1;
+let ivProductId = null;
+
+const ivModal    = $('iv-modal');
+const ivOverlay  = $('iv-overlay');
+const ivImg      = $('iv-img');
+const ivTitle    = $('iv-title');
+const ivCategory = $('iv-category');
+const ivPrice    = $('iv-price');
+const ivRotVal   = $('iv-rot-val');
+const ivZoomVal  = $('iv-zoom-val');
+
+const applyTransform = () => {
+    if (!ivImg) return;
+    ivImg.style.transform = `rotate(${ivRotation}deg) scale(${ivZoom})`;
+    if (ivRotVal)  ivRotVal.textContent  = `${ivRotation}°`;
+    if (ivZoomVal) ivZoomVal.textContent = `${Math.round(ivZoom * 100)}%`;
+};
+
+window.openViewer = (productId) => {
+    const p = products.find(x => String(x.id) === String(productId));
+    if (!p || !ivModal) return;
+
+    ivProductId  = productId;
+    ivRotation   = 0;
+    ivZoom       = 1;
+
+    if (ivImg)      { ivImg.src = p.image; ivImg.style.filter = 'none'; ivImg.style.transform = 'rotate(0deg) scale(1)'; }
+    if (ivTitle)    ivTitle.textContent    = p.title;
+    if (ivCategory) ivCategory.textContent = p.categoryLabel || p.category;
+    if (ivPrice)    ivPrice.textContent    = formatIDR(p.price);
+    if (ivRotVal)   ivRotVal.textContent   = '0°';
+    if (ivZoomVal)  ivZoomVal.textContent  = '100%';
+
+    // Reset colour buttons
+    document.querySelectorAll('.iv-color').forEach(b => b.classList.remove('active'));
+    const firstColor = document.querySelector('.iv-color');
+    if (firstColor) firstColor.classList.add('active');
+
+    ivModal.classList.add('iv-open');
+    ivOverlay.classList.add('iv-open');
+    document.body.style.overflow = 'hidden';
+};
+
+const closeViewer = () => {
+    if (!ivModal) return;
+    ivModal.classList.remove('iv-open');
+    ivOverlay.classList.remove('iv-open');
+    document.body.style.overflow = '';
+};
+
+if (ivModal) {
+    $('iv-close')?.addEventListener('click', closeViewer);
+    ivOverlay?.addEventListener('click', closeViewer);
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeViewer(); });
+
+    $('iv-rot-left')?.addEventListener('click',  () => { ivRotation -= 15; applyTransform(); });
+    $('iv-rot-right')?.addEventListener('click', () => { ivRotation += 15; applyTransform(); });
+
+    $('iv-zoom-in')?.addEventListener('click',  () => { ivZoom = Math.min(3, +(ivZoom + 0.2).toFixed(1)); applyTransform(); });
+    $('iv-zoom-out')?.addEventListener('click', () => { ivZoom = Math.max(0.3, +(ivZoom - 0.2).toFixed(1)); applyTransform(); });
+
+    document.querySelectorAll('.iv-color').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.iv-color').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            if (ivImg) {
+                const f = btn.dataset.filter;
+                ivImg.style.filter = (f === 'none') ? 'none' : f;
+            }
+        });
+    });
+
+    $('iv-reset')?.addEventListener('click', () => {
+        ivRotation = 0; ivZoom = 1;
+        applyTransform();
+        if (ivImg) ivImg.style.filter = 'none';
+        document.querySelectorAll('.iv-color').forEach(b => b.classList.remove('active'));
+        const firstColor = document.querySelector('.iv-color');
+        if (firstColor) firstColor.classList.add('active');
+    });
+
+    $('iv-cart-btn')?.addEventListener('click', () => {
+        if (ivProductId !== null) { addToCart(ivProductId); closeViewer(); }
+    });
 }
 
 // ===============================

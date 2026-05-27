@@ -97,6 +97,65 @@
         </div>
     </div>
 
+    <!-- ===== INTERACTIVE VIEWER MODAL ===== -->
+    <div class="iv-overlay" id="iv-overlay"></div>
+    <div class="iv-modal" id="iv-modal" role="dialog" aria-modal="true" aria-label="Interactive Viewer">
+        <button class="iv-close" id="iv-close" aria-label="Tutup"><i class="fa-solid fa-times"></i></button>
+        <div class="iv-header">
+            <div>
+                <div class="iv-badge" id="iv-category"></div>
+                <h2 class="iv-title" id="iv-title"></h2>
+                <div class="iv-price" id="iv-price"></div>
+            </div>
+        </div>
+
+        <div class="iv-stage" id="iv-stage">
+            <img class="iv-img" id="iv-img" src="" alt="Product View">
+        </div>
+
+        <!-- Controls -->
+        <div class="iv-controls">
+            <!-- Rotate -->
+            <div class="iv-ctrl-group">
+                <span class="iv-ctrl-label"><i class="fa-solid fa-rotate"></i> Putar</span>
+                <div class="iv-ctrl-row">
+                    <button class="iv-btn" id="iv-rot-left"  title="Putar Kiri"><i class="fa-solid fa-rotate-left"></i></button>
+                    <span class="iv-val" id="iv-rot-val">0°</span>
+                    <button class="iv-btn" id="iv-rot-right" title="Putar Kanan"><i class="fa-solid fa-rotate-right"></i></button>
+                </div>
+            </div>
+            <!-- Zoom -->
+            <div class="iv-ctrl-group">
+                <span class="iv-ctrl-label"><i class="fa-solid fa-magnifying-glass"></i> Zoom</span>
+                <div class="iv-ctrl-row">
+                    <button class="iv-btn" id="iv-zoom-out" title="Perkecil"><i class="fa-solid fa-minus"></i></button>
+                    <span class="iv-val" id="iv-zoom-val">100%</span>
+                    <button class="iv-btn" id="iv-zoom-in"  title="Perbesar"><i class="fa-solid fa-plus"></i></button>
+                </div>
+            </div>
+            <!-- Color -->
+            <div class="iv-ctrl-group">
+                <span class="iv-ctrl-label"><i class="fa-solid fa-palette"></i> Warna</span>
+                <div class="iv-colors">
+                    <button class="iv-color active" data-filter="none"               style="background:#1a1a1a" title="Original"></button>
+                    <button class="iv-color"         data-filter="sepia(0.6) saturate(2) hue-rotate(0deg)"   style="background:#b8860b" title="Gold / Emas"></button>
+                    <button class="iv-color"         data-filter="sepia(1) saturate(3) hue-rotate(200deg)"   style="background:#4a7fa5" title="Biru"></button>
+                    <button class="iv-color"         data-filter="sepia(1) saturate(3) hue-rotate(90deg)"    style="background:#4a8a4a" title="Hijau"></button>
+                    <button class="iv-color"         data-filter="sepia(1) saturate(2) hue-rotate(310deg)"   style="background:#a54a7f" title="Merah Marun"></button>
+                    <button class="iv-color"         data-filter="grayscale(1) brightness(1.1)"              style="background:#aaa"    title="Abu-abu"></button>
+                    <button class="iv-color"         data-filter="invert(1) hue-rotate(180deg) brightness(0.9)" style="background:#e8e8e8" title="Putih"></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reset & Cart -->
+        <div class="iv-footer">
+            <button class="iv-btn iv-btn-reset" id="iv-reset"><i class="fa-solid fa-arrow-rotate-left"></i> Reset</button>
+            <button class="btn btn-primary iv-cart-btn" id="iv-cart-btn"><i class="fa-solid fa-cart-plus"></i> Tambah ke Keranjang</button>
+        </div>
+    </div>
+    <!-- ======================================= -->
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase.js"></script>
     <script src="script.js"></script>
