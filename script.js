@@ -58,21 +58,36 @@ if (cartBtn)      cartBtn.addEventListener('click', toggleCart);
 if (closeCartBtn) closeCartBtn.addEventListener('click', toggleCart);
 if (cartOverlay)  cartOverlay.addEventListener('click', toggleCart);
 
-// Checkout handler (simpan ke DB)
+// Checkout handler (mengarahkan ke WhatsApp)
 const checkoutBtns = $$('.checkout-btn');
 checkoutBtns.forEach(btn => {
     btn.addEventListener('click', async () => {
         if (cart.length === 0) {
             if (typeof showToast !== 'undefined') showToast('Keranjang kosong!', 'info');
+            else alert('Keranjang kosong!');
             return;
         }
-        const name  = prompt('Nama Anda (untuk catatan pesanan):') || 'Guest';
-        const phone = prompt('No. WhatsApp (opsional):') || '';
+        
+        const name = prompt('Nama Anda:') || 'Guest';
+        let orderText = `Halo Admin Hidayat Teknik, saya ${name} ingin memesan:\n\n`;
+        
+        cart.forEach((item, index) => {
+            orderText += `${index + 1}. ${item.title} (${item.quantity}x) - ${formatIDR(item.price * item.quantity)}\n`;
+        });
+        
+        const total = cart.reduce((s,i)=>s+i.price*i.quantity,0);
+        orderText += `\nTotal: ${formatIDR(total)}\n\nMohon info ketersediaan dan proses pemesanannya. Terima kasih!`;
+        
+        // Nomor WhatsApp Admin (Ganti sesuai kebutuhan)
+        const waNumber = '6281234567890'; 
+        const waUrl = `https://wa.me/${waNumber}?text=${encodeURIComponent(orderText)}`;
+        
+        // Coba simpan ke DB dulu jika tersedia, kemudian buka WhatsApp
         if (typeof db !== 'undefined' && db.isConfigured()) {
-            await db.saveOrder(cart, { name, phone });
-        } else {
-            alert(`Pesanan diterima!\nTotal: ${formatIDR(cart.reduce((s,i)=>s+i.price*i.quantity,0))}`);
+            await db.saveOrder(cart, { name, phone: waNumber }).catch(e => console.error("DB Error:", e));
         }
+        
+        window.open(waUrl, '_blank');
     });
 });
 

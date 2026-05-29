@@ -2492,3 +2492,33 @@ ul {
 }
 .ba-label-before { right: 1.5rem; }
 .ba-label-after { left: 1.5rem; }
+
+/* ================================================
+   FLOATING WHATSAPP BUTTON
+   ================================================ */
+.wa-float {
+    position: fixed;
+    width: 60px;
+    height: 60px;
+    bottom: 40px;
+    right: 40px;
+    background-color: #25d366;
+    color: #FFF;
+    border-radius: 50px;
+    text-align: center;
+    font-size: 30px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.wa-float:hover {
+    background-color: #128c7e;
+    transform: translateY(-5px) scale(1.05);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+    color: #FFF;
+}
