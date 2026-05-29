@@ -79,7 +79,7 @@ checkoutBtns.forEach(btn => {
         orderText += `\nTotal: ${formatIDR(total)}\n\nMohon info ketersediaan dan proses pemesanannya. Terima kasih!`;
         
         // Nomor WhatsApp Admin (Ganti sesuai kebutuhan)
-        const waNumber = '6281234567890'; 
+        const waNumber = '6281378373566'; 
         const waUrl = `https://wa.me/${waNumber}?text=${encodeURIComponent(orderText)}`;
         
         // Coba simpan ke DB dulu jika tersedia, kemudian buka WhatsApp
@@ -1219,7 +1219,7 @@ if (dropzone) {
         if (aiPromptText) aiPromptText.textContent = prompt;
         if (aiEstimatePrice) aiEstimatePrice.textContent = formatIDR(estimate.total);
         if (aiEstimateDetail) aiEstimateDetail.textContent = estimate.detail;
-        if (aiWhatsappLink) aiWhatsappLink.href = `https://wa.me/6281234567890?text=${encodeURIComponent(waText)}`;
+        if (aiWhatsappLink) aiWhatsappLink.href = `https://wa.me/6281378373566?text=${encodeURIComponent(waText)}`;
         renderAnalysisChips(selectedArea, selectedStyle, analysis);
         showRecommendations(selectedArea, selectedStyle);
 
@@ -1461,7 +1461,7 @@ if (bookingDate) {
             `📍 Alamat: ${bookAddress.value.trim()}, ${bookCity.value.trim()}\n🏠 Area: ${areaLabel}\n` +
             (bookNotes.value.trim() ? `📝 Catatan: ${bookNotes.value.trim()}` : '')
         );
-        sumWaLink.href = `https://wa.me/6281234567890?text=${msg}`;
+        sumWaLink.href = `https://wa.me/6281378373566?text=${msg}`;
 
         summaryIdle.style.display = 'none';
         summaryCard.style.display = 'flex';
