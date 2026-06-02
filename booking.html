@@ -202,6 +202,13 @@
         <div class="cart-items" id="cart-items">
             <div class="empty-cart-msg">Keranjang Anda kosong.</div>
         </div>
+        <div class="promo-section" style="padding: 1rem 1.5rem; border-top: 1px solid rgba(255,255,255,0.1);">
+            <div style="display:flex; gap:0.5rem;">
+                <input type="text" id="promo-input" placeholder="Kode Promo / Voucher" style="flex:1; padding:0.5rem; border-radius:6px; border:1px solid rgba(255,255,255,0.2); background:rgba(0,0,0,0.2); color:white; font-size:0.85rem; text-transform:uppercase;">
+                <button id="apply-promo-btn" style="padding:0.5rem 1rem; border-radius:6px; background:var(--primary-color); color:#000; font-weight:600; border:none; cursor:pointer; font-size:0.85rem;">Pakai</button>
+            </div>
+            <div id="promo-msg" style="font-size:0.8rem; margin-top:0.5rem; display:none;"></div>
+        </div>
         <div class="cart-footer">
             <div class="cart-total">
                 <span>Total</span>

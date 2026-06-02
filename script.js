@@ -110,10 +110,13 @@ if (cartBtn)      cartBtn.addEventListener('click', toggleCart);
 if (closeCartBtn) closeCartBtn.addEventListener('click', toggleCart);
 if (cartOverlay)  cartOverlay.addEventListener('click', toggleCart);
 
+let appliedPromo = null;
+
 // Checkout handler (mengarahkan ke WhatsApp)
 const checkoutBtns = $$('.checkout-btn');
 checkoutBtns.forEach(btn => {
-    btn.addEventListener('click', async () => {
+    btn.addEventListener('click', async (e) => {
+        e.preventDefault(); // Mencegah reload jika memakai tag <a>
         if (cart.length === 0) {
             if (typeof showToast !== 'undefined') showToast('Keranjang kosong!', 'info');
             else alert('Keranjang kosong!');
@@ -127,8 +130,21 @@ checkoutBtns.forEach(btn => {
             orderText += `${index + 1}. ${item.title} (${item.quantity}x) - ${formatIDR(item.price * item.quantity)}\n`;
         });
         
-        const total = cart.reduce((s,i)=>s+i.price*i.quantity,0);
-        orderText += `\nTotal: ${formatIDR(total)}\n\nMohon info ketersediaan dan proses pemesanannya. Terima kasih!`;
+        let total = cart.reduce((s,i)=>s+i.price*i.quantity,0);
+        let promoText = '';
+        if (appliedPromo) {
+            if (appliedPromo.type === 'discount') {
+                const discount = total * appliedPromo.value;
+                total -= discount;
+                promoText = `\nPromo Digunakan: ${appliedPromo.code} (Diskon ${appliedPromo.value * 100}% = -${formatIDR(discount)})`;
+            } else if (appliedPromo.type === 'freebie') {
+                promoText = `\nPromo Digunakan: ${appliedPromo.code} (${appliedPromo.label})`;
+            }
+        }
+
+        orderText += `\nSubtotal: ${formatIDR(cart.reduce((s,i)=>s+i.price*i.quantity,0))}`;
+        if (promoText) orderText += promoText;
+        orderText += `\n*TOTAL BAYAR: ${formatIDR(total)}*\n\nMohon info ketersediaan dan proses pemesanannya. Terima kasih!`;
         
         // Nomor WhatsApp Admin (Ganti sesuai kebutuhan)
         const waNumber = '6281378373566'; 
@@ -182,9 +198,50 @@ const updateCartUI = () => {
     }
 
     if (cartTotalEl) {
-        cartTotalEl.textContent = formatIDR(cart.reduce((s, i) => s + i.price * i.quantity, 0));
+        let rawTotal = cart.reduce((s, i) => s + i.price * i.quantity, 0);
+        if (appliedPromo && appliedPromo.type === 'discount') {
+            const discount = rawTotal * appliedPromo.value;
+            const finalTotal = rawTotal - discount;
+            cartTotalEl.innerHTML = `<s style="font-size:0.8rem; color:var(--text-secondary); margin-right:5px;">${formatIDR(rawTotal)}</s> <span style="color:#4CAF50">${formatIDR(finalTotal)}</span>`;
+        } else {
+            cartTotalEl.textContent = formatIDR(rawTotal);
+        }
     }
 };
+
+// Promo logic
+const promoInput = $('promo-input');
+const applyPromoBtn = $('apply-promo-btn');
+const promoMsg = $('promo-msg');
+
+if (applyPromoBtn && promoInput && promoMsg) {
+    applyPromoBtn.addEventListener('click', () => {
+        const code = promoInput.value.trim().toUpperCase();
+        if (!code) return;
+        
+        // Daftar Promo
+        if (code === 'DISKON10') {
+            appliedPromo = { code, type: 'discount', value: 0.1 };
+            promoMsg.innerHTML = '<i class="fa-solid fa-check"></i> Diskon 10% berhasil dipasang!';
+            promoMsg.style.color = '#4CAF50';
+        } else if (code === 'GRATISSURVEY') {
+            appliedPromo = { code, type: 'freebie', label: 'Gratis Biaya Survey & Ukur' };
+            promoMsg.innerHTML = '<i class="fa-solid fa-check"></i> Promo Gratis Survey aktif!';
+            promoMsg.style.color = '#4CAF50';
+        } else if (code === 'CATPREMIUM') {
+            appliedPromo = { code, type: 'freebie', label: 'Upgrade Cat Anti-Karat Premium' };
+            promoMsg.innerHTML = '<i class="fa-solid fa-check"></i> Bonus Upgrade Cat Premium aktif!';
+            promoMsg.style.color = '#4CAF50';
+        } else {
+            appliedPromo = null;
+            promoMsg.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> Kode promo tidak valid.';
+            promoMsg.style.color = '#e74c3c';
+        }
+        
+        promoMsg.style.display = 'block';
+        updateCartUI();
+    });
+}
 
 // Cart actions (global scope for onclick in templates)
 window.addToCart = (productId) => {
