@@ -658,6 +658,82 @@ if (calcLebar && calcTinggi) {
         }
         // ============================
 
+        // ===== SMART SECURITY SCORE =====
+        const secBox   = $('security-score-box');
+        const secArc   = $('score-arc');
+        const secNum   = $('score-number');
+        const secLbl   = $('score-label');
+        const secBars  = $('score-bars');
+        const secRecs  = $('score-recommendations');
+
+        if (secBox) {
+            const luas = (lebar / 100) * (tinggi / 100);
+
+            // --- Faktor Material (0-40 poin) ---
+            let matScore = 20, matLabel = 'Hollow Galvanis';
+            if (calcJenis.value === 'nako_solid')  { matScore = 32; matLabel = 'Nako Solid'; }
+            else if (calcJenis.value === 'tempa')  { matScore = 40; matLabel = 'Besi Tempa'; }
+
+            // --- Faktor Motif/Rapat Celah (0-30 poin) ---
+            let motifScore = 20, motifLabel = 'Minimalis';
+            if (calcMotif.value === 'geometris')   { motifScore = 27; motifLabel = 'Geometris'; }
+            else if (calcMotif.value === 'klasik') { motifScore = 30; motifLabel = 'Klasik'; }
+
+            // --- Faktor Ukuran Bukaan (0-30 poin: kecil = lebih aman) ---
+            let sizeScore = 30;
+            if (luas > 3)       sizeScore = 10;
+            else if (luas > 2)  sizeScore = 15;
+            else if (luas > 1)  sizeScore = 22;
+            else if (luas > 0.5) sizeScore = 27;
+
+            const totalScore = matScore + motifScore + sizeScore;
+            const arcDash    = 172;
+            const arcOffset  = arcDash - (arcDash * totalScore / 100);
+
+            // Warna berdasarkan skor
+            let scoreColor = '#ef5350', scoreText = 'Rendah — Perlu Upgrade';
+            if (totalScore >= 85)      { scoreColor = '#66bb6a'; scoreText = 'Sangat Aman ✓'; }
+            else if (totalScore >= 70) { scoreColor = '#4fc3f7'; scoreText = 'Cukup Aman'; }
+            else if (totalScore >= 55) { scoreColor = '#FFA726'; scoreText = 'Sedang — Bisa Ditingkatkan'; }
+
+            // Terapkan ke UI
+            secBox.style.display = 'block';
+            setTimeout(() => {
+                if (secArc) { secArc.style.strokeDashoffset = arcOffset; secArc.style.stroke = scoreColor; }
+                if (secNum) { secNum.textContent = totalScore; secNum.style.color = scoreColor; }
+                if (secLbl) { secLbl.textContent = scoreText; secLbl.style.color = scoreColor; }
+            }, 50);
+
+            // Breakdown bar rows
+            const barRow = (label, val, max, color) => `
+                <div>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:3px;">
+                        <span style="color:var(--text-secondary);">${label}</span>
+                        <span style="color:${color}; font-weight:600;">${val}/${max}</span>
+                    </div>
+                    <div style="background:rgba(255,255,255,0.08); border-radius:4px; height:5px; overflow:hidden;">
+                        <div style="height:100%; width:${Math.round(val/max*100)}%; background:${color}; border-radius:4px; transition:width 0.8s ease;"></div>
+                    </div>
+                </div>`;
+
+            if (secBars) secBars.innerHTML =
+                barRow('Kekuatan Material (' + matLabel + ')', matScore, 40, '#4fc3f7') +
+                barRow('Kerapatan Motif ('  + motifLabel + ')', motifScore, 30, '#66bb6a') +
+                barRow('Ukuran Bukaan (Kecil = Aman)', sizeScore, 30, '#FFA726');
+
+            // Rekomendasi dinamis
+            const recs = [];
+            if (calcJenis.value === 'hollow_galvanis') recs.push('Gunakan <strong>Besi Hollow 4×4 cm</strong> atau upgrade ke Nako Solid untuk keamanan lebih baik.');
+            if (calcJenis.value !== 'tempa')            recs.push('Pertimbangkan <strong>Besi Tempa Ø 12 mm</strong> untuk perlindungan anti-bobol maksimal.');
+            if (calcMotif.value === 'minimalis')        recs.push('Pilih motif <strong>Geometris atau Klasik</strong> — celah lebih rapat, sulit ditembus.');
+            if (luas > 1.5)                             recs.push('Bukaan lebar — tambahkan <strong>rel palang tengah (cross bar)</strong> untuk memperkuat struktur.');
+            if (totalScore < 70)                        recs.push('Kombinasikan dengan <strong>kunci pintu deadbolt</strong> dan gembok tambahan di luar.');
+            if (totalScore >= 85)                       recs.push('Spesifikasi ini sudah <strong>optimal</strong>. Pastikan proses pengelasan dilakukan oleh teknisi bersertifikat.');
+
+            if (secRecs) secRecs.innerHTML = recs.map(r => `<li>${r}</li>`).join('') || '<li>Semua spesifikasi sudah baik.</li>';
+        }
+        // =================================
+
         currentCustomProduct = {
             id: 'custom_' + Date.now(),
             title: `Custom Terali (${lebar}×${tinggi}cm)`,
