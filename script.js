@@ -71,7 +71,13 @@ const products = [
     { id: 57, title: 'Wave Motion Balcony Rail',        category: 'modern',  price: 2700000, image: 'assets/images/minimalist_window_trellis_1779491829216.png',  categoryLabel: 'Modern' },
     { id: 58, title: 'Honeycomb Steel Panel',           category: 'modern',  price: 3900000, image: 'assets/images/modern_door_trellis_1779491945621.png',        categoryLabel: 'Modern' },
     { id: 59, title: 'Retro Grid Iron Screen',          category: 'modern',  price: 2450000, image: 'assets/images/minimalist_window_trellis_1779491829216.png',  categoryLabel: 'Modern' },
-    { id: 60, title: 'Avant-Garde Sculptural Gate',     category: 'modern',  price: 7500000, image: 'assets/images/modern_door_trellis_1779491945621.png',        categoryLabel: 'Modern' }
+    { id: 60, title: 'Avant-Garde Sculptural Gate',     category: 'modern',  price: 7500000, image: 'assets/images/modern_door_trellis_1779491945621.png',        categoryLabel: 'Modern' },
+
+    // ── KANOPI BAJA RINGAN ──────────────────────────────────────────
+    { id: 63, title: 'Kanopi Baja Ringan Atap Spandek', category: 'kanopi', price: 2500000, image: 'assets/images/canopy_baja_ringan.png', categoryLabel: 'Kanopi Baja Ringan' },
+    { id: 64, title: 'Kanopi Baja Ringan Atap Alderon', category: 'kanopi', price: 4200000, image: 'assets/images/canopy_baja_ringan.png', categoryLabel: 'Kanopi Baja Ringan' },
+    { id: 65, title: 'Kanopi Besi Hollow Minimalis',    category: 'kanopi', price: 3800000, image: 'assets/images/canopy_baja_ringan.png', categoryLabel: 'Kanopi Baja Ringan' },
+    { id: 66, title: 'Kanopi Kaca Tempered Premium',    category: 'kanopi', price: 8500000, image: 'assets/images/canopy_baja_ringan.png', categoryLabel: 'Kanopi Baja Ringan' }
 ];
 
 // ---- Shared State ----

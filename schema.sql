@@ -88,7 +88,16 @@ INSERT INTO products (title, category, category_label, price, image_url) VALUES
 ('Wave Motion Balcony Rail',       'modern',  'Modern',       2700000, 'assets/images/minimalist_window_trellis_1779491829216.png'),
 ('Honeycomb Steel Panel',          'modern',  'Modern',       3900000, 'assets/images/modern_door_trellis_1779491945621.png'),
 ('Retro Grid Iron Screen',         'modern',  'Modern',       2450000, 'assets/images/minimalist_window_trellis_1779491829216.png'),
-('Avant-Garde Sculptural Gate',    'modern',  'Modern',       7500000, 'assets/images/modern_door_trellis_1779491945621.png');
+('Avant-Garde Sculptural Gate',    'modern',  'Modern',       7500000, 'assets/images/modern_door_trellis_1779491945621.png'),
+('Diamond Facet Front Door',         'modern',  'Modern',       5100000, 'assets/images/modern_door_trellis_1779491945621.png'),
+('Minimalist Tube Terali',         'modern',  'Modern',       1680000, 'assets/images/minimalist_window_trellis_1779491829216.png');
+
+-- ── KANOPI & BAJA RINGAN (4 produk)
+INSERT INTO products (title, category, category_label, price, image_url) VALUES
+('Kanopi Baja Ringan Atap Spandek', 'kanopi', 'Kanopi Baja Ringan', 2500000, 'assets/images/canopy_baja_ringan.png'),
+('Kanopi Baja Ringan Atap Alderon', 'kanopi', 'Kanopi Baja Ringan', 4200000, 'assets/images/canopy_baja_ringan.png'),
+('Kanopi Besi Hollow Minimalis',    'kanopi', 'Kanopi Baja Ringan', 3800000, 'assets/images/canopy_baja_ringan.png'),
+('Kanopi Kaca Tempered Premium',    'kanopi', 'Kanopi Baja Ringan', 8500000, 'assets/images/canopy_baja_ringan.png');
 
 -- -----------------------------------------------
 -- 2. ORDERS (pesanan / checkout keranjang)

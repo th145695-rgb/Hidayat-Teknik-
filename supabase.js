@@ -330,7 +330,8 @@ const db = {
                 'jendela': 'Jendela',
                 'pintu': 'Pintu Utama',
                 'klasik': 'Klasik',
-                'modern': 'Modern'
+                'modern': 'Modern',
+                'kanopi': 'Kanopi Baja Ringan'
             };
 
             const payload = {

@@ -287,6 +287,11 @@ document.addEventListener('DOMContentLoaded', () => {
         { id: 58, title: 'Honeycomb Steel Panel',          category: 'modern',  category_label: 'Modern',      price: 3900000, stock: 13, image_url: 'assets/images/modern_door_trellis_1779491945621.png' },
         { id: 59, title: 'Retro Grid Iron Screen',         category: 'modern',  category_label: 'Modern',      price: 2450000, stock: 20, image_url: 'assets/images/minimalist_window_trellis_1779491829216.png' },
         { id: 60, title: 'Avant-Garde Sculptural Gate',    category: 'modern',  category_label: 'Modern',      price: 7500000, stock: 4,  image_url: 'assets/images/modern_door_trellis_1779491945621.png' },
+        // ── KANOPI BAJA RINGAN
+        { id: 63, title: 'Kanopi Baja Ringan Atap Spandek', category: 'kanopi', category_label: 'Kanopi Baja Ringan', price: 2500000, stock: 15, image_url: 'assets/images/canopy_baja_ringan.png' },
+        { id: 64, title: 'Kanopi Baja Ringan Atap Alderon', category: 'kanopi', category_label: 'Kanopi Baja Ringan', price: 4200000, stock: 10, image_url: 'assets/images/canopy_baja_ringan.png' },
+        { id: 65, title: 'Kanopi Besi Hollow Minimalis',    category: 'kanopi', category_label: 'Kanopi Baja Ringan', price: 3800000, stock: 12, image_url: 'assets/images/canopy_baja_ringan.png' },
+        { id: 66, title: 'Kanopi Kaca Tempered Premium',    category: 'kanopi', category_label: 'Kanopi Baja Ringan', price: 8500000, stock: 5,  image_url: 'assets/images/canopy_baja_ringan.png' },
     ];
 
     let activeProducts = [];
