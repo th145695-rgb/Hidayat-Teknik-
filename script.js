@@ -593,13 +593,24 @@ if (calcLebar && calcTinggi) {
 
         let detail = `<strong>Proyek: ${typeName}</strong><br>Luas: ${luas.toFixed(2)} m²<br>Spesifikasi: `;
 
-        if (calcJenis.value === 'nako_solid')   { pricePerM2 += 200000; detail += 'Nako Solid, '; }
-        else if (calcJenis.value === 'tempa')   { pricePerM2 += 400000; detail += 'Besi Tempa, '; }
-        else                                    { detail += 'Hollow Galvanis, '; }
+        const grpJenis = $('grp-jenis');
+        const grpMotif = $('grp-motif');
 
-        if (calcMotif.value === 'geometris')    { pricePerM2 += 150000; detail += 'Motif Geometris, '; }
-        else if (calcMotif.value === 'klasik')  { pricePerM2 += 300000; detail += 'Motif Klasik, '; }
-        else                                    { detail += 'Motif Minimalis, '; }
+        if (pType === 'terali') {
+            if (grpJenis) grpJenis.style.display = 'block';
+            if (grpMotif) grpMotif.style.display = 'block';
+
+            if (calcJenis.value === 'nako_solid')   { pricePerM2 += 200000; detail += 'Nako Solid, '; }
+            else if (calcJenis.value === 'tempa')   { pricePerM2 += 400000; detail += 'Besi Tempa, '; }
+            else                                    { detail += 'Hollow Galvanis, '; }
+
+            if (calcMotif.value === 'geometris')    { pricePerM2 += 150000; detail += 'Motif Geometris, '; }
+            else if (calcMotif.value === 'klasik')  { pricePerM2 += 300000; detail += 'Motif Klasik, '; }
+            else                                    { detail += 'Motif Minimalis, '; }
+        } else {
+            if (grpJenis) grpJenis.style.display = 'none';
+            if (grpMotif) grpMotif.style.display = 'none';
+        }
 
         if (calcWarna.value === 'emas')         { pricePerM2 += 50000;  detail += 'Warna Emas'; }
         else if (calcWarna.value === 'putih')   { detail += 'Warna Putih'; }
