@@ -95,14 +95,19 @@ INSERT INTO products (title, category, category_label, price, image_url) VALUES
 -- -----------------------------------------------
 CREATE TABLE IF NOT EXISTS orders (
     id              UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+    invoice_number  TEXT        UNIQUE,                               -- INV-HT-XXXX
     customer_name   TEXT,
     customer_phone  TEXT,
     customer_email  TEXT,
     total_price     INTEGER     NOT NULL DEFAULT 0,
-    status          TEXT        NOT NULL DEFAULT 'pending', -- 'pending','confirmed','processing','done','cancelled'
+    status          TEXT        NOT NULL DEFAULT 'confirmed',
+    -- Status values: 'confirmed' | 'fabrication' | 'finishing' | 'installation' | 'done' | 'cancelled'
     notes           TEXT,
     created_at      TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Tambahkan kolom jika tabel sudah ada (jalankan jika upgrade dari versi lama):
+-- ALTER TABLE orders ADD COLUMN IF NOT EXISTS invoice_number TEXT UNIQUE;
 
 -- -----------------------------------------------
 -- 3. ORDER ITEMS (item di dalam pesanan)
@@ -164,6 +169,7 @@ CREATE POLICY "anon_no_insert"        ON products FOR INSERT TO authenticated WI
 ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "anon_insert_orders"    ON orders FOR INSERT WITH CHECK (true);
 CREATE POLICY "public_read_orders"    ON orders FOR SELECT USING (true);
+CREATE POLICY "anon_update_orders"    ON orders FOR UPDATE USING (true) WITH CHECK (true);
 
 -- Order Items: anonymous bisa INSERT
 ALTER TABLE order_items ENABLE ROW LEVEL SECURITY;
@@ -210,10 +216,12 @@ CREATE OR REPLACE VIEW booking_summary AS
 CREATE OR REPLACE VIEW order_summary AS
     SELECT
         o.id,
+        o.invoice_number,
         o.customer_name,
         o.customer_phone,
         o.total_price,
         o.status,
+        o.notes,
         COUNT(oi.id) AS item_count,
         o.created_at
     FROM orders o

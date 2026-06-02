@@ -123,6 +123,9 @@
                 <div class="sidebar-link" data-target="view-products">
                     <i class="fa-solid fa-boxes-stacked"></i> Kelola Produk
                 </div>
+                <div class="sidebar-link" data-target="view-orders">
+                    <i class="fa-solid fa-clipboard-list"></i> Kelola Pesanan
+                </div>
                 <div class="sidebar-link" data-target="view-customers">
                     <i class="fa-solid fa-users"></i> Kelola Customer
                 </div>
@@ -240,6 +243,63 @@
                         </thead>
                         <tbody id="product-table-body">
                             <tr><td colspan="5" style="text-align:center; padding:2rem;">Memuat data...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- KELOLA PESANAN VIEW -->
+            <section id="view-orders" class="view-section">
+                <div class="page-header">
+                    <h1>Kelola Pesanan</h1>
+                    <button class="admin-btn" style="width:auto; padding:0.7rem 1.5rem; font-size:0.9rem;" onclick="loadOrders()">
+                        <i class="fa-solid fa-rotate-right"></i> Refresh
+                    </button>
+                </div>
+
+                <style>
+                    .status-select {
+                        background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1);
+                        color: #fff; padding: 0.4rem 0.7rem; border-radius: 8px;
+                        font-size: 0.85rem; cursor: pointer; font-family: var(--font-body);
+                    }
+                    .status-select:focus { outline: none; border-color: var(--primary-color); }
+                    .order-badge { padding: 0.25rem 0.7rem; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
+                    .order-badge.confirmed    { background: rgba(52,152,219,0.15); color: #3498db; border: 1px solid rgba(52,152,219,0.3); }
+                    .order-badge.fabrication  { background: rgba(241,196,15,0.15); color: #f1c40f; border: 1px solid rgba(241,196,15,0.3); }
+                    .order-badge.finishing    { background: rgba(230,126,34,0.15); color: #e67e22; border: 1px solid rgba(230,126,34,0.3); }
+                    .order-badge.installation { background: rgba(155,89,182,0.15); color: #9b59b6; border: 1px solid rgba(155,89,182,0.3); }
+                    .order-badge.done         { background: rgba(46,204,113,0.15); color: #2ecc71; border: 1px solid rgba(46,204,113,0.3); }
+                    .order-badge.cancelled    { background: rgba(231,76,60,0.15);  color: #e74c3c; border: 1px solid rgba(231,76,60,0.3); }
+                    .notes-input {
+                        width: 100%; padding: 0.5rem 0.8rem; font-size: 0.82rem;
+                        background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.08);
+                        color: #ccc; border-radius: 8px; font-family: var(--font-body);
+                        resize: none;
+                    }
+                    .save-notes-btn {
+                        margin-top: 0.4rem; padding: 0.35rem 0.9rem; font-size: 0.78rem;
+                        background: rgba(197,155,75,0.15); color: var(--primary-color);
+                        border: 1px solid rgba(197,155,75,0.3); border-radius: 6px; cursor: pointer;
+                    }
+                    .save-notes-btn:hover { background: rgba(197,155,75,0.25); }
+                </style>
+
+                <div class="admin-panel" style="padding:0; overflow:hidden;">
+                    <table class="data-table" id="orders-table">
+                        <thead>
+                            <tr>
+                                <th>Invoice</th>
+                                <th>Pelanggan</th>
+                                <th>Item Pesanan</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                                <th>Catatan</th>
+                                <th>Tanggal</th>
+                            </tr>
+                        </thead>
+                        <tbody id="orders-table-body">
+                            <tr><td colspan="7" style="text-align:center; padding:2rem; color:#888;"><i class="fa-solid fa-spinner fa-spin"></i> Memuat pesanan...</td></tr>
                         </tbody>
                     </table>
                 </div>

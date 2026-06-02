@@ -67,8 +67,90 @@ document.addEventListener('DOMContentLoaded', () => {
                 if(sec.id === target) sec.classList.add('active');
                 else sec.classList.remove('active');
             });
+            // Auto-load pesanan saat tab dibuka
+            if (target === 'view-orders') loadOrders();
         });
     });
+
+    // --- KELOLA PESANAN ---
+    const STATUS_LABELS = {
+        confirmed:    '✅ Dikonfirmasi',
+        fabrication:  '🔨 Fabrikasi',
+        finishing:    '🎨 Finishing',
+        installation: '🚚 Instalasi',
+        done:         '✅ Selesai',
+        cancelled:    '❌ Dibatalkan'
+    };
+
+    window.loadOrders = async () => {
+        const tbody = document.getElementById('orders-table-body');
+        if (!tbody) return;
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:2rem; color:#888;"><i class="fa-solid fa-spinner fa-spin"></i> Memuat pesanan...</td></tr>`;
+
+        if (typeof db === 'undefined') {
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:2rem; color:#e74c3c;">Database tidak tersedia.</td></tr>`;
+            return;
+        }
+
+        const result = await db.fetchAllOrders();
+        if (!result.success || !result.data || result.data.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:2rem; color:#888;">Belum ada pesanan masuk.</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = '';
+        result.data.forEach(order => {
+            const items = (order.order_items || []).map(i => `${i.product_title} (x${i.quantity})`).join('<br>') || '<em style="color:#888">-</em>';
+            const dateStr = new Date(order.created_at).toLocaleDateString('id-ID', { day:'2-digit', month:'short', year:'numeric' });
+            const totalRp = 'Rp ' + Number(order.total_price).toLocaleString('id-ID');
+            const status  = order.status || 'confirmed';
+
+            const statusOptions = Object.entries(STATUS_LABELS).map(([val, lbl]) =>
+                `<option value="${val}" ${val === status ? 'selected' : ''}>${lbl}</option>`
+            ).join('');
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>
+                    <strong style="color:var(--primary-color);">${order.invoice_number || order.id.slice(0,8).toUpperCase()}</strong><br>
+                    <span style="font-size:0.75rem; color:#888;">${order.customer_phone || '-'}</span>
+                </td>
+                <td><strong>${order.customer_name || 'Guest'}</strong></td>
+                <td style="font-size:0.82rem; max-width:180px;">${items}</td>
+                <td style="font-weight:600; color:var(--primary-color);">${totalRp}</td>
+                <td>
+                    <select class="status-select" data-order-id="${order.id}" onchange="updateStatus(this)">
+                        ${statusOptions}
+                    </select>
+                </td>
+                <td>
+                    <textarea class="notes-input" rows="2" placeholder="Tambah catatan..." data-order-id="${order.id}">${order.notes || ''}</textarea>
+                    <button class="save-notes-btn" onclick="saveNotes('${order.id}', this)">💾 Simpan</button>
+                </td>
+                <td style="color:#888; font-size:0.82rem;">${dateStr}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    };
+
+    window.updateStatus = async (selectEl) => {
+        const orderId   = selectEl.getAttribute('data-order-id');
+        const newStatus = selectEl.value;
+        selectEl.disabled = true;
+        await db.updateOrderStatus(orderId, newStatus);
+        selectEl.disabled = false;
+    };
+
+    window.saveNotes = async (orderId, btn) => {
+        const textarea = document.querySelector(`textarea[data-order-id="${orderId}"]`);
+        if (!textarea) return;
+        btn.disabled = true;
+        btn.textContent = '⏳';
+        const res = await db.updateOrderStatus(orderId, null, textarea.value);
+        btn.disabled  = false;
+        btn.textContent = res.success ? '✅ Tersimpan' : '❌ Gagal';
+        setTimeout(() => btn.textContent = '💾 Simpan', 2000);
+    };
 
     // --- CHART JS ---
     const initDashboard = () => {

@@ -154,16 +154,19 @@ const db = {
         const toast = showToast('Memproses pesanan...', 'loading');
         try {
             const totalPrice = cartItems.reduce((s, i) => s + i.price * i.quantity, 0);
+            // Generate nomor invoice unik: INV-HT-XXXX
+            const invoiceNumber = 'INV-HT-' + Math.floor(1000 + Math.random() * 9000);
 
             // 1. Buat record order
             const { data: order, error: orderError } = await supabaseClient
                 .from('orders')
                 .insert([{
+                    invoice_number: invoiceNumber,
                     customer_name:  customerInfo.name  || 'Guest',
                     customer_phone: customerInfo.phone || null,
                     customer_email: customerInfo.email || null,
                     total_price:    totalPrice,
-                    status:         'pending'
+                    status:         'confirmed'
                 }])
                 .select()
                 .single();
@@ -191,14 +194,91 @@ const db = {
             if (itemsError) throw itemsError;
 
             toast.remove();
-            showToast(`Pesanan #${order.id.slice(0,8).toUpperCase()} berhasil dibuat!`, 'success');
-            console.log('[DB] Order saved:', order.id);
-            return { success: true, orderId: order.id };
+            showToast(`Pesanan ${invoiceNumber} berhasil dibuat!`, 'success');
+            console.log('[DB] Order saved:', order.id, invoiceNumber);
+            return { success: true, orderId: order.id, invoiceNumber };
         } catch (err) {
             toast.remove();
             showToast('Gagal menyimpan pesanan. Coba lagi.', 'error');
             console.error('[DB] Order error:', err.message);
             return { success: false, error: err.message };
+        }
+    },
+
+    // ------------------------------------------
+    // ORDER: Cari pesanan by invoice atau no. HP
+    // ------------------------------------------
+    fetchOrder: async (query) => {
+        try {
+            const isPhone = /^08|^628/.test(query) || /^\d{9,13}$/.test(query);
+            let orderQuery = supabaseClient
+                .from('orders')
+                .select(`
+                    id, invoice_number, customer_name, customer_phone,
+                    total_price, status, notes, created_at,
+                    order_items ( product_title, product_price, quantity )
+                `);
+
+            if (isPhone) {
+                orderQuery = orderQuery.ilike('customer_phone', `%${query}%`);
+            } else {
+                orderQuery = orderQuery.ilike('invoice_number', `%${query.toUpperCase()}%`);
+            }
+
+            const { data, error } = await orderQuery.order('created_at', { ascending: false }).limit(1).single();
+            if (error) throw error;
+            return { success: true, data };
+        } catch (err) {
+            return { success: false, error: err.message };
+        }
+    },
+
+    // ------------------------------------------
+    // ORDER: Update status pesanan (Admin)
+    // ------------------------------------------
+    updateOrderStatus: async (orderId, newStatus, notes = null) => {
+        const toast = showToast('Memperbarui status...', 'loading');
+        try {
+            const payload = {};
+            if (newStatus !== null) payload.status = newStatus;
+            if (notes !== null) payload.notes = notes;
+
+            const { error } = await supabaseClient
+                .from('orders')
+                .update(payload)
+                .eq('id', orderId);
+
+            toast.remove();
+            if (error) throw error;
+            showToast('Status pesanan berhasil diperbarui!', 'success');
+            return { success: true };
+        } catch (err) {
+            toast.remove();
+            showToast('Gagal update status: ' + err.message, 'error');
+            console.error('[DB] Update order status error:', err.message);
+            return { success: false, error: err.message };
+        }
+    },
+
+    // ------------------------------------------
+    // ORDER: Ambil semua pesanan (Admin)
+    // ------------------------------------------
+    fetchAllOrders: async () => {
+        try {
+            const { data, error } = await supabaseClient
+                .from('orders')
+                .select(`
+                    id, invoice_number, customer_name, customer_phone,
+                    total_price, status, notes, created_at,
+                    order_items ( product_title, quantity )
+                `)
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+            return { success: true, data };
+        } catch (err) {
+            console.error('[DB] Fetch all orders error:', err.message);
+            return { success: false, data: [] };
         }
     },
 
