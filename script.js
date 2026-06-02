@@ -209,40 +209,122 @@ const updateCartUI = () => {
     }
 };
 
-// Promo logic
-const promoInput = $('promo-input');
-const applyPromoBtn = $('apply-promo-btn');
-const promoMsg = $('promo-msg');
+// Shopee-style Promo Modal Logic
+let availablePromos = [];
 
-if (applyPromoBtn && promoInput && promoMsg) {
-    applyPromoBtn.addEventListener('click', () => {
-        const rawCode = promoInput.value.trim().toUpperCase();
-        const code = rawCode.replace(/[^A-Z0-9]/g, ''); // Hapus spasi dan simbol (seperti %)
-        if (!code) return;
-        
-        // Daftar Promo
-        if (code === 'DISKON10') {
-            appliedPromo = { code: 'DISKON10', type: 'discount', value: 0.1 };
-            promoMsg.innerHTML = '<i class="fa-solid fa-check"></i> Diskon 10% berhasil dipasang!';
-            promoMsg.style.color = '#4CAF50';
-        } else if (code === 'GRATISSURVEY') {
-            appliedPromo = { code: 'GRATISSURVEY', type: 'freebie', label: 'Gratis Biaya Survey & Ukur' };
-            promoMsg.innerHTML = '<i class="fa-solid fa-check"></i> Promo Gratis Survey aktif!';
-            promoMsg.style.color = '#4CAF50';
-        } else if (code === 'CATPREMIUM') {
-            appliedPromo = { code: 'CATPREMIUM', type: 'freebie', label: 'Upgrade Cat Anti-Karat Premium' };
-            promoMsg.innerHTML = '<i class="fa-solid fa-check"></i> Bonus Upgrade Cat Premium aktif!';
-            promoMsg.style.color = '#4CAF50';
-        } else {
-            appliedPromo = null;
-            promoMsg.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> Kode promo tidak valid.';
-            promoMsg.style.color = '#e74c3c';
-        }
-        
-        promoMsg.style.display = 'block';
-        updateCartUI();
+const injectPromoModal = () => {
+    if ($('promo-modal-overlay')) return;
+    const html = `
+        <div id="promo-modal-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999; backdrop-filter:blur(3px);">
+            <div id="promo-modal-content" style="position:absolute; bottom:0; left:50%; transform:translateX(-50%); width:100%; max-width:400px; background:#1a1d24; border-top-left-radius:16px; border-top-right-radius:16px; padding:1.5rem; transition:transform 0.3s ease-out; box-shadow:0 -10px 30px rgba(0,0,0,0.5);">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                    <h3 style="margin:0; font-size:1.1rem;">Pilih Voucher</h3>
+                    <button id="close-promo-modal" style="background:none; border:none; color:white; font-size:1.2rem; cursor:pointer;"><i class="fa-solid fa-times"></i></button>
+                </div>
+                <div id="promo-list-container" style="max-height:60vh; overflow-y:auto; display:flex; flex-direction:column; gap:0.8rem; padding-bottom:1rem;">
+                    <!-- List will be injected here -->
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', html);
+
+    $('close-promo-modal').addEventListener('click', closePromoModal);
+    $('promo-modal-overlay').addEventListener('click', (e) => {
+        if(e.target.id === 'promo-modal-overlay') closePromoModal();
     });
-}
+};
+
+const openPromoModal = async () => {
+    injectPromoModal();
+    const overlay = $('promo-modal-overlay');
+    const container = $('promo-list-container');
+    
+    overlay.style.display = 'block';
+    
+    // Tampilkan loading state
+    container.innerHTML = '<div style="text-align:center; padding:2rem; color:var(--text-secondary);"><i class="fa-solid fa-circle-notch fa-spin"></i> Memuat voucher...</div>';
+    
+    // Ambil data voucher (dari Supabase atau fallback)
+    if (availablePromos.length === 0) {
+        if (typeof db !== 'undefined' && db.fetchActivePromos) {
+            availablePromos = await db.fetchActivePromos();
+        }
+        // Fallback jika DB kosong/error
+        if (availablePromos.length === 0) {
+            availablePromos = [
+                { id: '1', code: 'DISKON10', title: 'Diskon 10% Semua Terali', type: 'discount', value: 0.1 },
+                { id: '2', code: 'GRATISSURVEY', title: 'Gratis Biaya Survey & Ukur', type: 'freebie', value: 0 },
+                { id: '3', code: 'CATPREMIUM', title: 'Upgrade Cat Anti-Karat Premium', type: 'freebie', value: 0 }
+            ];
+        }
+    }
+
+    renderPromoList();
+};
+
+const closePromoModal = () => {
+    const overlay = $('promo-modal-overlay');
+    if (overlay) overlay.style.display = 'none';
+};
+
+const applyPromoSelection = (promoStr) => {
+    const promo = JSON.parse(decodeURIComponent(promoStr));
+    appliedPromo = {
+        code: promo.code,
+        type: promo.type,
+        value: promo.value,
+        label: promo.title
+    };
+    
+    // Update label di cart
+    const labelEls = $$('#applied-promo-label');
+    labelEls.forEach(el => {
+        el.textContent = `Voucher Dipakai: ${promo.code}`;
+        el.style.color = '#4CAF50';
+    });
+    
+    updateCartUI();
+    closePromoModal();
+};
+
+const renderPromoList = () => {
+    const container = $('promo-list-container');
+    if (availablePromos.length === 0) {
+        container.innerHTML = '<div style="text-align:center; padding:2rem; color:var(--text-secondary);">Tidak ada voucher yang tersedia saat ini.</div>';
+        return;
+    }
+    
+    container.innerHTML = availablePromos.map(p => {
+        const isSelected = appliedPromo && appliedPromo.code === p.code;
+        const icon = p.type === 'discount' ? 'fa-percent' : 'fa-gift';
+        const strData = encodeURIComponent(JSON.stringify(p));
+        
+        return `
+            <div style="display:flex; border:1px solid ${isSelected ? 'var(--primary-color)' : 'rgba(255,255,255,0.1)'}; background:rgba(0,0,0,0.2); border-radius:8px; overflow:hidden; cursor:pointer;" onclick="applyPromoSelection('${strData}')">
+                <div style="background:${isSelected ? 'var(--primary-color)' : '#333'}; width:80px; display:flex; flex-direction:column; align-items:center; justify-content:center; color:${isSelected ? '#000' : 'white'};">
+                    <i class="fa-solid ${icon}" style="font-size:1.5rem; margin-bottom:0.3rem;"></i>
+                    <span style="font-size:0.7rem; text-transform:uppercase; font-weight:700;">Promo</span>
+                </div>
+                <div style="flex:1; padding:0.8rem; display:flex; flex-direction:column; justify-content:center;">
+                    <div style="font-weight:600; font-size:0.95rem; margin-bottom:0.2rem; color:white;">${p.title}</div>
+                    <div style="font-size:0.75rem; color:var(--text-secondary);">Kode: ${p.code}</div>
+                </div>
+                <div style="width:50px; display:flex; align-items:center; justify-content:center;">
+                    <div style="width:20px; height:20px; border-radius:50%; border:2px solid ${isSelected ? 'var(--primary-color)' : 'rgba(255,255,255,0.3)'}; display:flex; align-items:center; justify-content:center;">
+                        ${isSelected ? '<div style="width:10px; height:10px; border-radius:50%; background:var(--primary-color);"></div>' : ''}
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+};
+
+// Event listener for opening modal
+document.addEventListener('click', (e) => {
+    const btn = e.target.closest('#open-promo-modal-btn');
+    if (btn) openPromoModal();
+});
 
 // Cart actions (global scope for onclick in templates)
 window.addToCart = (productId) => {

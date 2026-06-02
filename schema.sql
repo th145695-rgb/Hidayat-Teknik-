@@ -228,3 +228,26 @@ CREATE OR REPLACE VIEW order_summary AS
     LEFT JOIN order_items oi ON oi.order_id = o.id
     GROUP BY o.id
     ORDER BY o.created_at DESC;
+
+-- -----------------------------------------------
+-- 9. PROMOS (Vouchers for Shopee-like checkout)
+-- -----------------------------------------------
+CREATE TABLE promos (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    code VARCHAR(50) NOT NULL UNIQUE,
+    title VARCHAR(150) NOT NULL,
+    type VARCHAR(50) NOT NULL, -- 'discount', 'freebie'
+    value NUMERIC(10, 2) DEFAULT 0, -- e.g., 0.1 for 10%
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Insert Default Promos
+INSERT INTO promos (code, title, type, value, is_active) VALUES
+('DISKON10', 'Diskon 10% Semua Terali', 'discount', 0.10, true),
+('GRATISSURVEY', 'Gratis Biaya Survey & Ukur', 'freebie', 0, true),
+('CATPREMIUM', 'Upgrade Cat Anti-Karat Premium', 'freebie', 0, true);
+
+ALTER TABLE promos ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "public_read_promos" ON promos FOR SELECT USING (true);
+CREATE POLICY "anon_update_promos" ON promos FOR UPDATE USING (true) WITH CHECK (true);
