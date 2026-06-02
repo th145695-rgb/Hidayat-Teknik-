@@ -216,20 +216,21 @@ const promoMsg = $('promo-msg');
 
 if (applyPromoBtn && promoInput && promoMsg) {
     applyPromoBtn.addEventListener('click', () => {
-        const code = promoInput.value.trim().toUpperCase();
+        const rawCode = promoInput.value.trim().toUpperCase();
+        const code = rawCode.replace(/[^A-Z0-9]/g, ''); // Hapus spasi dan simbol (seperti %)
         if (!code) return;
         
         // Daftar Promo
         if (code === 'DISKON10') {
-            appliedPromo = { code, type: 'discount', value: 0.1 };
+            appliedPromo = { code: 'DISKON10', type: 'discount', value: 0.1 };
             promoMsg.innerHTML = '<i class="fa-solid fa-check"></i> Diskon 10% berhasil dipasang!';
             promoMsg.style.color = '#4CAF50';
         } else if (code === 'GRATISSURVEY') {
-            appliedPromo = { code, type: 'freebie', label: 'Gratis Biaya Survey & Ukur' };
+            appliedPromo = { code: 'GRATISSURVEY', type: 'freebie', label: 'Gratis Biaya Survey & Ukur' };
             promoMsg.innerHTML = '<i class="fa-solid fa-check"></i> Promo Gratis Survey aktif!';
             promoMsg.style.color = '#4CAF50';
         } else if (code === 'CATPREMIUM') {
-            appliedPromo = { code, type: 'freebie', label: 'Upgrade Cat Anti-Karat Premium' };
+            appliedPromo = { code: 'CATPREMIUM', type: 'freebie', label: 'Upgrade Cat Anti-Karat Premium' };
             promoMsg.innerHTML = '<i class="fa-solid fa-check"></i> Bonus Upgrade Cat Premium aktif!';
             promoMsg.style.color = '#4CAF50';
         } else {
