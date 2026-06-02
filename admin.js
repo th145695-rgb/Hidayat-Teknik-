@@ -127,10 +127,46 @@ document.addEventListener('DOMContentLoaded', () => {
                     <textarea class="notes-input" rows="2" placeholder="Tambah catatan..." data-order-id="${order.id}">${order.notes || ''}</textarea>
                     <button class="save-notes-btn" onclick="saveNotes('${order.id}', this)">💾 Simpan</button>
                 </td>
+                <td style="min-width:180px;">
+                    <select id="stage-${order.id}" style="width:100%; padding:0.35rem; font-size:0.78rem; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); color:#fff; border-radius:6px; margin-bottom:0.3rem;">
+                        <option value="Rangka Selesai">📐 Rangka Selesai</option>
+                        <option value="Proses Las">🔥 Proses Las</option>
+                        <option value="Proses Finishing">🛠️ Proses Finishing</option>
+                        <option value="Proses Cat">🎨 Proses Cat</option>
+                        <option value="Siap Kirim">📦 Siap Kirim</option>
+                    </select>
+                    <input type="text" id="caption-${order.id}" placeholder="Keterangan foto..." style="width:100%; padding:0.35rem 0.5rem; font-size:0.78rem; background:rgba(0,0,0,0.2); border:1px solid rgba(255,255,255,0.08); color:#ccc; border-radius:6px; margin-bottom:0.3rem;">
+                    <input type="file" id="photo-${order.id}" accept="image/*" style="width:100%; font-size:0.72rem; color:#888; margin-bottom:0.3rem;">
+                    <button class="save-notes-btn" onclick="uploadProgressPhoto('${order.id}', this)" style="width:100%;">📸 Upload Foto</button>
+                </td>
                 <td style="color:#888; font-size:0.82rem;">${dateStr}</td>
             `;
             tbody.appendChild(tr);
         });
+    };
+
+    window.uploadProgressPhoto = async (orderId, btn) => {
+        const stageEl   = document.getElementById(`stage-${orderId}`);
+        const captionEl = document.getElementById(`caption-${orderId}`);
+        const photoEl   = document.getElementById(`photo-${orderId}`);
+        const photoFile = photoEl?.files[0] || null;
+        const stage     = stageEl?.value || 'Update';
+        const caption   = captionEl?.value || '';
+
+        btn.disabled = true;
+        btn.textContent = '⏳ Mengupload...';
+
+        const res = await db.addProductionUpdate(orderId, stage, caption, photoFile);
+        if (res.success) {
+            btn.textContent = '✅ Berhasil!';
+            captionEl.value = '';
+            if (photoEl) photoEl.value = '';
+        } else {
+            btn.textContent = '❌ Gagal';
+            console.error('Upload error:', res.error);
+        }
+        btn.disabled = false;
+        setTimeout(() => btn.textContent = '📸 Upload Foto', 2500);
     };
 
     window.updateStatus = async (selectEl) => {

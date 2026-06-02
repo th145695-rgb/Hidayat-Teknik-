@@ -426,6 +426,59 @@ const db = {
     // ------------------------------------------
     isConfigured: () => {
         return !SUPABASE_URL.includes('YOUR_PROJECT_ID') && !SUPABASE_ANON_KEY.includes('YOUR_ANON');
+    },
+
+    // ------------------------------------------
+    // PRODUCTION UPDATES: Progres foto bengkel
+    // ------------------------------------------
+    fetchProductionUpdates: async (orderId) => {
+        try {
+            const { data, error } = await supabaseClient
+                .from('production_updates')
+                .select('*')
+                .eq('order_id', orderId)
+                .order('created_at', { ascending: true });
+            if (error) throw error;
+            return { success: true, data: data || [] };
+        } catch (err) {
+            return { success: false, data: [], error: err.message };
+        }
+    },
+
+    addProductionUpdate: async (orderId, stage, caption, photoFile) => {
+        try {
+            let photoUrl = '';
+            if (photoFile) {
+                const ext = photoFile.name.split('.').pop();
+                const filename = `progress_${orderId}_${Date.now()}.${ext}`;
+                const { data: storageData, error: storageError } = await supabaseClient
+                    .storage.from('production-photos')
+                    .upload(filename, photoFile, { cacheControl: '3600', upsert: false });
+                if (storageError) throw storageError;
+                const { data: urlData } = supabaseClient.storage
+                    .from('production-photos').getPublicUrl(storageData.path);
+                photoUrl = urlData.publicUrl;
+            }
+            const { data, error } = await supabaseClient
+                .from('production_updates')
+                .insert([{ order_id: orderId, stage, caption, photo_url: photoUrl }])
+                .select().single();
+            if (error) throw error;
+            return { success: true, data };
+        } catch (err) {
+            return { success: false, error: err.message };
+        }
+    },
+
+    deleteProductionUpdate: async (updateId) => {
+        try {
+            const { error } = await supabaseClient
+                .from('production_updates').delete().eq('id', updateId);
+            if (error) throw error;
+            return { success: true };
+        } catch (err) {
+            return { success: false, error: err.message };
+        }
     }
 };
 

@@ -251,3 +251,20 @@ INSERT INTO promos (code, title, type, value, is_active) VALUES
 ALTER TABLE promos ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "public_read_promos" ON promos FOR SELECT USING (true);
 CREATE POLICY "anon_update_promos" ON promos FOR UPDATE USING (true) WITH CHECK (true);
+
+-- -----------------------------------------------
+-- 10. PRODUCTION UPDATES (Dashboard Progres Bengkel)
+-- -----------------------------------------------
+CREATE TABLE production_updates (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    order_id UUID REFERENCES orders(id) ON DELETE CASCADE,
+    stage VARCHAR(100) NOT NULL,       -- 'rangka', 'las', 'finishing', 'cat', 'selesai'
+    caption TEXT DEFAULT '',
+    photo_url TEXT DEFAULT '',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+ALTER TABLE production_updates ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "public_read_production"  ON production_updates FOR SELECT USING (true);
+CREATE POLICY "anon_insert_production"  ON production_updates FOR INSERT WITH CHECK (true);
+CREATE POLICY "anon_delete_production"  ON production_updates FOR DELETE USING (true);
