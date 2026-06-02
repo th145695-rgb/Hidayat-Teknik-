@@ -684,7 +684,10 @@ if (calcLebar && calcTinggi) {
         const secRecs  = $('score-recommendations');
 
         if (secBox) {
-            const luas = (lebar / 100) * (tinggi / 100);
+            if (pType !== 'terali') {
+                secBox.style.display = 'none';
+            } else {
+                const luas = (lebar / 100) * (tinggi / 100);
 
             // --- Faktor Material (0-40 poin) ---
             let matScore = 20, matLabel = 'Hollow Galvanis';
@@ -748,6 +751,7 @@ if (calcLebar && calcTinggi) {
             if (totalScore >= 85)                       recs.push('Spesifikasi ini sudah <strong>optimal</strong>. Pastikan proses pengelasan dilakukan oleh teknisi bersertifikat.');
 
             if (secRecs) secRecs.innerHTML = recs.map(r => `<li>${r}</li>`).join('') || '<li>Semua spesifikasi sudah baik.</li>';
+            }
         }
         // =================================
 
