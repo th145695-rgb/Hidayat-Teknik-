@@ -500,6 +500,24 @@ if (calcLebar && calcTinggi) {
         }
         // =====================================================
 
+        // ===== SIMULASI CICILAN =====
+        const instBox = $('installment-box');
+        const instDp  = $('inst-dp');
+        const instMo  = $('inst-month');
+        if (instBox && total >= 2000000) {
+            // Simulasi: DP 30% (dibulatkan ke atas 50rb), Sisa dibagi 3
+            let dp = Math.ceil((total * 0.3) / 50000) * 50000;
+            let sisa = total - dp;
+            let perBulan = Math.ceil((sisa / 3) / 10000) * 10000; // dibulatkan ke puluhan ribu
+
+            instDp.textContent = formatIDR(dp);
+            instMo.textContent = formatIDR(perBulan) + ' /bln';
+            instBox.style.display = 'block';
+        } else if (instBox) {
+            instBox.style.display = 'none';
+        }
+        // ============================
+
         currentCustomProduct = {
             id: 'custom_' + Date.now(),
             title: `Custom Terali (${lebar}×${tinggi}cm)`,
