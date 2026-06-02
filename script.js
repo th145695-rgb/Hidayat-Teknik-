@@ -249,6 +249,17 @@ const renderProducts = (category = 'all') => {
     
     productsContainer.innerHTML = list.map(p => {
         const isFav = favorites.includes(p.id);
+        
+        // Generate deterministik rating & sold count dari ID produk
+        const ratingNum = 4.5 + ((p.id * 7) % 6) / 10; // 4.5 s.d 5.0
+        const soldCount = 35 + ((p.id * 13) % 215);    // 35 s.d 250
+        let starsHTML = '';
+        for(let i=1; i<=5; i++) {
+            if(i <= Math.floor(ratingNum)) starsHTML += '<i class="fa-solid fa-star"></i>';
+            else if(i === Math.ceil(ratingNum) && ratingNum % 1 !== 0) starsHTML += '<i class="fa-solid fa-star-half-stroke"></i>';
+            else starsHTML += '<i class="fa-regular fa-star"></i>';
+        }
+
         return `
         <div class="product-card">
             <div class="product-img-wrapper" style="cursor:pointer;" onclick="openViewer(${p.id})">
@@ -261,6 +272,10 @@ const renderProducts = (category = 'all') => {
             <div class="product-details">
                 <div class="product-category">${p.categoryLabel}</div>
                 <h3 class="product-title">${p.title}</h3>
+                <div style="color:#C59B4B; font-size:0.75rem; margin-bottom:0.7rem; display:flex; align-items:center; gap:6px;">
+                    <div style="display:flex; gap:1px;">${starsHTML}</div>
+                    <span style="color:var(--text-secondary); font-size:0.75rem;">${ratingNum.toFixed(1)} (${soldCount} terjual)</span>
+                </div>
                 <div class="product-price">${formatIDR(p.price)}</div>
                 <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:0.5rem;">
                     <button class="add-to-cart-btn" style="flex:1;" onclick="addToCart(${p.id})">
