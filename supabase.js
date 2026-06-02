@@ -429,6 +429,24 @@ const db = {
     },
 
     // ------------------------------------------
+    // PROMOS: Ambil voucher aktif
+    // ------------------------------------------
+    fetchActivePromos: async () => {
+        try {
+            const { data, error } = await supabaseClient
+                .from('promos')
+                .select('*')
+                .eq('is_active', true)
+                .order('created_at', { ascending: false });
+            if (error) throw error;
+            return data || [];
+        } catch (err) {
+            console.error('[DB] fetchActivePromos error:', err.message);
+            return [];
+        }
+    },
+
+    // ------------------------------------------
     // PRODUCTION UPDATES: Progres foto bengkel
     // ------------------------------------------
     fetchProductionUpdates: async (orderId) => {
