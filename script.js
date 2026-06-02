@@ -562,6 +562,7 @@ const calcPrice    = $('calc-result-price');
 const calcDetails  = $('calc-result-details');
 const calcCartBtn  = $('calc-add-to-cart');
 const calcForm     = $('price-calculator');
+const calcProjType = $('calc-project-type');
 
 let currentCustomProduct = null;
 
@@ -579,8 +580,18 @@ if (calcLebar && calcTinggi) {
         }
 
         const luas = (lebar / 100) * (tinggi / 100);
-        let pricePerM2 = 500000;
-        let detail = `Luas: ${luas.toFixed(2)} m²<br>Spesifikasi: `;
+        const pType = calcProjType ? calcProjType.value : 'terali';
+        
+        let pricePerM2 = 500000; // Default (Terali)
+        let typeName = 'Terali';
+        
+        if (pType === 'kanopi') { pricePerM2 = 450000; typeName = 'Kanopi'; }
+        else if (pType === 'atap') { pricePerM2 = 250000; typeName = 'Atap / Baja Ringan'; }
+        else if (pType === 'carport') { pricePerM2 = 500000; typeName = 'Carport'; }
+        else if (pType === 'gazebo') { pricePerM2 = 800000; typeName = 'Gazebo'; }
+        else if (pType === 'gudang') { pricePerM2 = 600000; typeName = 'Struktur Gudang'; }
+
+        let detail = `<strong>Proyek: ${typeName}</strong><br>Luas: ${luas.toFixed(2)} m²<br>Spesifikasi: `;
 
         if (calcJenis.value === 'nako_solid')   { pricePerM2 += 200000; detail += 'Nako Solid, '; }
         else if (calcJenis.value === 'tempa')   { pricePerM2 += 400000; detail += 'Besi Tempa, '; }
@@ -742,17 +753,19 @@ if (calcLebar && calcTinggi) {
 
         currentCustomProduct = {
             id: 'custom_' + Date.now(),
-            title: `Custom Terali (${lebar}×${tinggi}cm)`,
+            title: `Custom ${typeName} (${lebar}×${tinggi}cm)`,
             category: 'custom',
             price: total,
             image: 'assets/images/classic_iron_trellis_1779491907306.png',
-            categoryLabel: 'Custom Order'
+            categoryLabel: `Custom ${typeName}`
         };
     };
 
-    [calcLebar, calcTinggi, calcJenis, calcWarna, calcMotif].forEach(el => {
-        el.addEventListener('input', calculatePrice);
-        el.addEventListener('change', calculatePrice);
+    [calcProjType, calcLebar, calcTinggi, calcJenis, calcWarna, calcMotif].forEach(el => {
+        if (el) {
+            el.addEventListener('input', calculatePrice);
+            el.addEventListener('change', calculatePrice);
+        }
     });
 
     calcCartBtn.addEventListener('click', () => {

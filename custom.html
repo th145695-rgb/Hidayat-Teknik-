@@ -40,13 +40,24 @@
                 <h2>Masukkan Spesifikasi</h2>
                 <p>Isi dimensi dan pilih material — harga tampil otomatis.</p>
                 <form id="price-calculator" class="calc-form">
+                    <div class="form-group" style="margin-bottom:1.2rem;">
+                        <label for="calc-project-type">Jenis Proyek</label>
+                        <select id="calc-project-type" required>
+                            <option value="terali">Terali Jendela / Pintu (Default)</option>
+                            <option value="kanopi">Kanopi</option>
+                            <option value="atap">Atap Rumah / Baja Ringan</option>
+                            <option value="carport">Carport</option>
+                            <option value="gazebo">Gazebo</option>
+                            <option value="gudang">Struktur Gudang</option>
+                        </select>
+                    </div>
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="calc-lebar">Lebar (cm)</label>
-                            <input type="number" id="calc-lebar" placeholder="Contoh: 120" required min="10">
+                            <label for="calc-lebar">Lebar Area (cm)</label>
+                            <input type="number" id="calc-lebar" placeholder="Contoh: 100" required min="10">
                         </div>
                         <div class="form-group">
-                            <label for="calc-tinggi">Tinggi (cm)</label>
+                            <label for="calc-tinggi">Tinggi/Panjang Area (cm)</label>
                             <input type="number" id="calc-tinggi" placeholder="Contoh: 150" required min="10">
                         </div>
                     </div>
