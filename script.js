@@ -591,14 +591,18 @@ if (calcLebar && calcTinggi) {
         else if (pType === 'gazebo') { pricePerM2 = 800000; typeName = 'Gazebo'; }
         else if (pType === 'gudang') { pricePerM2 = 600000; typeName = 'Struktur Gudang'; }
 
-        let detail = `<strong>Proyek: ${typeName}</strong><br>Luas: ${luas.toFixed(2)} m²<br>Spesifikasi: `;
+        let detail = `<strong>Proyek: ${typeName}</strong><br>Luas: ${luas.toFixed(2)} m²`;
 
         const grpJenis = $('grp-jenis');
         const grpMotif = $('grp-motif');
+        const grpWarna = $('grp-warna');
 
         if (pType === 'terali') {
             if (grpJenis) grpJenis.style.display = 'block';
             if (grpMotif) grpMotif.style.display = 'block';
+            if (grpWarna) grpWarna.style.display = 'block';
+
+            detail += `<br>Spesifikasi: `;
 
             if (calcJenis.value === 'nako_solid')   { pricePerM2 += 200000; detail += 'Nako Solid, '; }
             else if (calcJenis.value === 'tempa')   { pricePerM2 += 400000; detail += 'Besi Tempa, '; }
@@ -607,14 +611,15 @@ if (calcLebar && calcTinggi) {
             if (calcMotif.value === 'geometris')    { pricePerM2 += 150000; detail += 'Motif Geometris, '; }
             else if (calcMotif.value === 'klasik')  { pricePerM2 += 300000; detail += 'Motif Klasik, '; }
             else                                    { detail += 'Motif Minimalis, '; }
+
+            if (calcWarna.value === 'emas')         { pricePerM2 += 50000;  detail += 'Warna Emas'; }
+            else if (calcWarna.value === 'putih')   { detail += 'Warna Putih'; }
+            else                                    { detail += 'Warna Hitam Matte'; }
         } else {
             if (grpJenis) grpJenis.style.display = 'none';
             if (grpMotif) grpMotif.style.display = 'none';
+            if (grpWarna) grpWarna.style.display = 'none';
         }
-
-        if (calcWarna.value === 'emas')         { pricePerM2 += 50000;  detail += 'Warna Emas'; }
-        else if (calcWarna.value === 'putih')   { detail += 'Warna Putih'; }
-        else                                    { detail += 'Warna Hitam Matte'; }
 
         const total = luas * pricePerM2;
         calcPrice.textContent = formatIDR(total);
