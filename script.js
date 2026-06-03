@@ -1503,6 +1503,25 @@ if (dropzone) {
         }
     };
 
+    const generateWithGeminiBackend = async ({ areaKey, styleKey, notes }) => {
+        const response = await fetch('/api/generate-ai-design', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                areaType: areaKey,
+                style: styleKey,
+                notes
+            })
+        });
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok || !payload.success || !payload.imageDataUrl) {
+            const err = new Error(payload.error || 'Gemini API belum bisa generate gambar.');
+            err.code = payload.code || 'GEMINI_ERROR';
+            throw err;
+        }
+        return payload;
+    };
+
     const renderAIDesign = async () => {
         const notes = uploadNotes ? uploadNotes.value : '';
         const sourceImage = await loadImageFromSrc(previewImg.src);
@@ -1512,31 +1531,28 @@ if (dropzone) {
         const area = areaDetails[selectedArea] || areaDetails.jendela;
         const style = aiStyles[selectedStyle] || aiStyles.minimalis;
         let designDataUrl = null;
-        let provider = 'openai';
-        let providerLabel = 'OpenAI Image API';
+        let provider = 'gemini';
+        let providerLabel = 'Gemini AI (Imagen 3)';
 
         try {
-            const aiDesign = await generateWithOpenAIBackend({
-                source: previewImg.src,
+            const aiDesign = await generateWithGeminiBackend({
                 areaKey: selectedArea,
                 styleKey: selectedStyle,
-                notes,
-                prompt,
-                analysis
+                notes
             });
             designDataUrl = aiDesign.imageDataUrl;
             prompt = aiDesign.prompt || prompt;
         } catch (err) {
-            console.warn('[AI Backend] OpenAI image generation unavailable:', err.message);
+            console.warn('[AI Backend] Gemini image generation unavailable:', err.message);
             designDataUrl = previewImg.src;
             provider = 'unavailable';
-            providerLabel = 'OpenAI belum aktif';
-            const helpText = err.code === 'OPENAI_API_KEY_MISSING'
-                ? 'OPENAI_API_KEY belum terpasang di Vercel, jadi gambar OpenAI belum bisa dibuat.'
-                : `OpenAI backend gagal dipanggil: ${err.message}`;
+            providerLabel = 'Gemini belum aktif';
+            const helpText = err.code === 'GEMINI_API_KEY_MISSING'
+                ? 'GEMINI_API_KEY belum terpasang di Vercel. Silakan tambahkan di Settings → Environment Variables.'
+                : `Gemini backend gagal: ${err.message}`;
             if (aiBackendWarningText) aiBackendWarningText.textContent = helpText;
             if (typeof showToast !== 'undefined') {
-                showToast('OpenAI backend belum aktif. Hasil AI belum dibuat.', 'info');
+                showToast('Gemini API belum aktif. Tambahkan GEMINI_API_KEY di Vercel.', 'info');
             }
         }
 
@@ -1549,13 +1565,13 @@ if (dropzone) {
             `Prompt: ${prompt}`
         ].join('\n');
 
-        latestAIPreview = provider === 'openai' ? designDataUrl : null;
+        latestAIPreview = provider === 'gemini' ? designDataUrl : null;
         if (aiBeforeImg) aiBeforeImg.src = previewImg.src;
         if (aiAfterImg) aiAfterImg.src = designDataUrl;
         if (aiProviderLabel) aiProviderLabel.textContent = providerLabel;
-        if (aiBackendWarning) aiBackendWarning.style.display = provider === 'openai' ? 'none' : 'flex';
-        if (aiGeneratedCard) aiGeneratedCard.classList.toggle('ai-unavailable', provider !== 'openai');
-        if (aiDownloadBtn) aiDownloadBtn.disabled = provider !== 'openai';
+        if (aiBackendWarning) aiBackendWarning.style.display = provider === 'gemini' ? 'none' : 'flex';
+        if (aiGeneratedCard) aiGeneratedCard.classList.toggle('ai-unavailable', provider !== 'gemini');
+        if (aiDownloadBtn) aiDownloadBtn.disabled = provider !== 'gemini';
         if (aiPromptText) aiPromptText.textContent = prompt;
         if (aiEstimatePrice) aiEstimatePrice.textContent = formatIDR(estimate.total);
         if (aiEstimateDetail) aiEstimateDetail.textContent = estimate.detail;
@@ -1569,7 +1585,7 @@ if (dropzone) {
     if (aiDownloadBtn) {
         aiDownloadBtn.addEventListener('click', () => {
             if (!latestAIPreview) {
-                if (typeof showToast !== 'undefined') showToast('Preview OpenAI belum tersedia untuk didownload.', 'info');
+                if (typeof showToast !== 'undefined') showToast('Preview Gemini belum tersedia untuk didownload.', 'info');
                 return;
             }
             const link = document.createElement('a');
