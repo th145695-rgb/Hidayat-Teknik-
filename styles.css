@@ -1828,6 +1828,11 @@ ul {
     .location-container {
         grid-template-columns: 1fr;
     }
+    .packages-grid .package-card {
+        transform: scale(1) !important;
+        margin-bottom: 2rem;
+    }
+}
 }
 
 /* Footer */
