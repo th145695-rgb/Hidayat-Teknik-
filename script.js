@@ -1841,6 +1841,14 @@ if (bookingDate) {
 document.addEventListener('DOMContentLoaded', () => {
     updateCartUI();
     
+    // Load custom Before-After images from Admin Settings if exist
+    const customBeforeImg = localStorage.getItem('ht_home_before_img');
+    const customAfterImg = localStorage.getItem('ht_home_after_img');
+    const baBefore = document.querySelector('.ba-img-before');
+    const baAfter = document.querySelector('.ba-img-after');
+    if (baBefore && customBeforeImg) baBefore.src = customBeforeImg;
+    if (baAfter && customAfterImg) baAfter.src = customAfterImg;
+
     // Before/After Slider Logic
     const baContainer = document.getElementById('ba-container');
     const baInput = document.getElementById('ba-input');

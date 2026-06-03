@@ -417,6 +417,46 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.disabled = false;
     });
 
+    // --- HOME SETTINGS LOGIC ---
+    const homeSettingsForm = document.getElementById('home-settings-form');
+    if (homeSettingsForm) {
+        homeSettingsForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const btn = homeSettingsForm.querySelector('button[type="submit"]');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...';
+            btn.disabled = true;
+
+            const beforeFile = document.getElementById('hs-before').files[0];
+            const afterFile = document.getElementById('hs-after').files[0];
+            
+            const handleFile = (file, key) => {
+                return new Promise(resolve => {
+                    if (!file) resolve();
+                    else {
+                        const reader = new FileReader();
+                        reader.onload = e => {
+                            try { localStorage.setItem(key, e.target.result); } catch(err) { alert('File terlalu besar!'); }
+                            resolve();
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            };
+
+            Promise.all([
+                handleFile(beforeFile, 'ht_home_before_img'),
+                handleFile(afterFile, 'ht_home_after_img')
+            ]).then(() => {
+                btn.innerHTML = '✅ Tersimpan';
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }, 2000);
+            });
+        });
+    }
+
     // Initialize
     checkSession();
 });

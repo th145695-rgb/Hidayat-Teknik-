@@ -241,6 +241,7 @@ ul {
     margin-bottom: 1.5rem;
     background: linear-gradient(to right, #fff, #a0a0a0);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
@@ -2241,6 +2242,8 @@ ul {
     border-top: 1px solid rgba(255,255,255,0.06);
 }
 .iv-cart-btn { flex: 1; justify-content: center; }
+
+/* ================================================
    ESTIMASI WAKTU PENGERJAAN — Time Estimate Box
    ================================================ */
 .time-estimate-box {
