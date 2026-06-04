@@ -1591,10 +1591,19 @@ if (dropzone) {
             uploadSubmit.disabled = true;
             recIdle.style.display = 'none';
             recResult.style.display = 'none';
-            recLoading.style.display = 'flex';
+            
+            const arSection = $('ar-section-container');
+            if (arSection) arSection.style.display = 'none';
+            if (aiGeneratedCard) aiGeneratedCard.style.display = 'block';
+            const recArea = $('rec-area-label');
+            if (recArea) recArea.parentElement.style.display = 'block';
+            
+            if (recLoading) recLoading.style.display = 'flex';
             
             if (window.matchMedia('(max-width: 992px)').matches) {
-                requestAnimationFrame(() => recLoading.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+                requestAnimationFrame(() => {
+                    if (recLoading) recLoading.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                });
             }
             
             try {
@@ -1603,7 +1612,7 @@ if (dropzone) {
                 console.error('Error generating AI design:', err);
                 if (typeof showToast !== 'undefined') showToast('Gagal memproses gambar AI.', 'error');
             } finally {
-                recLoading.style.display = 'none';
+                if (recLoading) recLoading.style.display = 'none';
                 validateUpload();
             }
         });
@@ -1638,6 +1647,12 @@ if (dropzone) {
             recIdle.style.display    = 'none';
             recResult.style.display  = 'block';
             
+            const arSection = $('ar-section-container');
+            if (arSection) arSection.style.display = 'block';
+            if (aiGeneratedCard) aiGeneratedCard.style.display = 'none';
+            const recArea = $('rec-area-label');
+            if (recArea) recArea.parentElement.style.display = 'none'; // hide rekomendasi katalog
+            
             // Populate models
             if (arModels && products) {
                 arModels.innerHTML = products.map(p => `
@@ -1670,6 +1685,9 @@ if (dropzone) {
             }
             recResult.style.display = 'none';
             recIdle.style.display   = 'flex';
+            
+            const arSection = $('ar-section-container');
+            if (arSection) arSection.style.display = 'none';
         });
     }
 

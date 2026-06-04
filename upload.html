@@ -142,36 +142,100 @@
                     <p>WebAR Kamera: Lihat langsung simulasi terali di jendela/pintu Anda.</p>
                 </div>
                 
-                <div class="rec-result" id="rec-result" style="display:none">
-                    <div class="rec-result-header" style="justify-content: space-between;">
-                        <div style="display: flex; gap: 10px; align-items: center;">
-                            <i class="fa-solid fa-camera" style="color: #e67e22;"></i>
-                            <div>
-                                <h3>WebAR Preview</h3>
-                                <p>Geser & cubit untuk menyesuaikan ukuran</p>
+                <div class="rec-loading" id="rec-loading" style="display:none; flex-direction:column; align-items:center; justify-content:center; padding:3rem; gap:1rem; color:var(--text-secondary);">
+                    <i class="fa-solid fa-wand-magic-sparkles fa-spin fa-2x" style="color:var(--primary-color);"></i>
+                    <p>Gemini AI sedang mendesain terali Anda...</p>
+                </div>
+                
+                <div class="rec-result" id="rec-result" style="display:none; flex-direction:column; gap:2rem;">
+                    
+                    <!-- AI GENERATED PREVIEW SECTION -->
+                    <div class="ai-preview-generated" style="background:#1a1d24; border:1px solid rgba(197,155,75,0.2); border-radius:12px; overflow:hidden;">
+                        <div style="padding:1rem 1.5rem; border-bottom:1px solid rgba(255,255,255,0.05); display:flex; justify-content:space-between; align-items:center;">
+                            <h3 style="margin:0; font-size:1.1rem; color:var(--primary-color);"><i class="fa-solid fa-wand-magic-sparkles"></i> Hasil Desain AI</h3>
+                            <span id="ai-provider-label" style="font-size:0.75rem; background:rgba(255,255,255,0.1); padding:0.2rem 0.6rem; border-radius:12px;">Gemini AI</span>
+                        </div>
+                        
+                        <div id="ai-backend-warning" style="display:none; background:rgba(231,76,60,0.1); padding:1rem; border-bottom:1px solid rgba(231,76,60,0.2); align-items:flex-start; gap:0.8rem; color:#e74c3c;">
+                            <i class="fa-solid fa-triangle-exclamation" style="margin-top:2px;"></i>
+                            <div style="font-size:0.85rem;" id="ai-backend-warning-text">Backend AI gagal memproses gambar. Menampilkan hasil original.</div>
+                        </div>
+
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:2px; background:rgba(255,255,255,0.05);">
+                            <div style="position:relative; aspect-ratio:4/3; background:#000;">
+                                <img id="ai-before-img" src="" style="width:100%; height:100%; object-fit:contain;">
+                                <div style="position:absolute; top:10px; left:10px; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px); padding:4px 8px; border-radius:4px; font-size:0.7rem; font-weight:600;">BEFORE</div>
+                            </div>
+                            <div style="position:relative; aspect-ratio:4/3; background:#000;">
+                                <img id="ai-after-img" src="" style="width:100%; height:100%; object-fit:contain;">
+                                <div style="position:absolute; top:10px; left:10px; background:var(--primary-color); color:#000; padding:4px 8px; border-radius:4px; font-size:0.7rem; font-weight:700;">AFTER</div>
                             </div>
                         </div>
-                        <button id="btn-stop-ar" style="background: #e74c3c; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer;"><i class="fa-solid fa-stop"></i> Tutup</button>
-                    </div>
+                        
+                        <div style="padding:1.5rem;">
+                            <div id="ai-analysis" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:1.5rem;"></div>
+                            
+                            <div style="background:rgba(0,0,0,0.2); border:1px solid rgba(255,255,255,0.05); border-radius:8px; padding:1rem; margin-bottom:1.5rem;">
+                                <div style="font-size:0.75rem; color:var(--text-secondary); margin-bottom:0.3rem; text-transform:uppercase; letter-spacing:1px;">AI Prompt</div>
+                                <div id="ai-prompt-text" style="font-size:0.85rem; font-style:italic; color:#ccc;"></div>
+                            </div>
 
-                    <div class="ar-container" style="position: relative; width: 100%; height: 60vh; background: #000; border-radius: 12px; overflow: hidden; margin-bottom: 2rem;">
-                        <video id="ar-video" autoplay playsinline style="width: 100%; height: 100%; object-fit: cover;"></video>
-                        <div id="ar-overlay-container" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 200px; height: auto; cursor: move; touch-action: none; border: 2px dashed rgba(241, 196, 15, 0.7); box-sizing: border-box;">
-                            <img id="ar-overlay-img" src="assets/images/minimalist_window_trellis_1779491829216.png" style="width: 100%; height: 100%; object-fit: contain; pointer-events: none;">
-                            <div id="ar-resize-handle" style="position: absolute; bottom: -10px; right: -10px; width: 25px; height: 25px; background: #f1c40f; border-radius: 50%; cursor: se-resize;"></div>
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; padding-bottom:1.5rem; border-bottom:1px solid rgba(255,255,255,0.05);">
+                                <div>
+                                    <div style="font-size:0.75rem; color:var(--text-secondary); margin-bottom:0.2rem;">Estimasi Biaya Terali (Custom)</div>
+                                    <div id="ai-estimate-price" style="font-size:1.4rem; font-weight:700; color:var(--primary-color);">Rp 0</div>
+                                    <div id="ai-estimate-detail" style="font-size:0.75rem; color:#888; margin-top:0.3rem;"></div>
+                                </div>
+                            </div>
+
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                                <button id="download-ai-preview" class="btn btn-outline" style="font-size:0.9rem;"><i class="fa-solid fa-download"></i> Simpan Desain</button>
+                                <a id="ai-whatsapp-link" href="#" target="_blank" class="btn btn-primary" style="background:#25D366; border:none; color:white; font-size:0.9rem; text-align:center; display:flex; align-items:center; justify-content:center; gap:0.5rem;"><i class="fa-brands fa-whatsapp"></i> Chat Admin</a>
+                            </div>
                         </div>
                     </div>
 
-                    <h4 class="rec-products-title">Pilih Model Terali</h4>
-                    <div class="rec-products" id="ar-models" style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px;">
-                        <!-- JS will populate -->
+                    <!-- KATALOG REKOMENDASI -->
+                    <div style="margin-top:1rem;">
+                        <h4 style="margin-bottom:1rem; font-size:1.1rem;">Rekomendasi dari Katalog</h4>
+                        <p id="rec-area-label" style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:1rem; margin-top:-0.5rem;"></p>
+                        <div class="rec-products" id="rec-products" style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px;">
+                            <!-- JS akan isi -->
+                        </div>
                     </div>
-                    
-                    <div class="rec-cta" style="margin-top: 1rem;">
-                        <a href="https://wa.me/6281378373566?text=Halo+Hidayat+Teknik%2C+saya+ingin+memesan+terali+seperti+di+AR+Preview"
-                           target="_blank" class="btn btn-whatsapp" style="width: 100%;">
-                            <i class="fa-brands fa-whatsapp"></i> Pesan Sekarang
-                        </a>
+
+                    <!-- WEBAR PREVIEW SECTION -->
+                    <div id="ar-section-container" style="display:none;">
+                        <div class="rec-result-header" style="justify-content: space-between; margin-bottom:1rem;">
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <i class="fa-solid fa-camera" style="color: #e67e22;"></i>
+                                <div>
+                                    <h3>WebAR Preview</h3>
+                                    <p>Geser & cubit untuk menyesuaikan ukuran</p>
+                                </div>
+                            </div>
+                            <button id="btn-stop-ar" style="background: #e74c3c; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer;"><i class="fa-solid fa-stop"></i> Tutup</button>
+                        </div>
+
+                        <div class="ar-container" style="position: relative; width: 100%; height: 60vh; background: #000; border-radius: 12px; overflow: hidden; margin-bottom: 2rem;">
+                            <video id="ar-video" autoplay playsinline style="width: 100%; height: 100%; object-fit: cover;"></video>
+                            <div id="ar-overlay-container" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 200px; height: auto; cursor: move; touch-action: none; border: 2px dashed rgba(241, 196, 15, 0.7); box-sizing: border-box;">
+                                <img id="ar-overlay-img" src="assets/images/minimalist_window_trellis_1779491829216.png" style="width: 100%; height: 100%; object-fit: contain; pointer-events: none;">
+                                <div id="ar-resize-handle" style="position: absolute; bottom: -10px; right: -10px; width: 25px; height: 25px; background: #f1c40f; border-radius: 50%; cursor: se-resize;"></div>
+                            </div>
+                        </div>
+
+                        <h4 class="rec-products-title">Pilih Model Terali</h4>
+                        <div class="rec-products" id="ar-models" style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px;">
+                            <!-- JS will populate -->
+                        </div>
+                        
+                        <div class="rec-cta" style="margin-top: 1rem;">
+                            <a href="https://wa.me/6281378373566?text=Halo+Hidayat+Teknik%2C+saya+ingin+memesan+terali+seperti+di+AR+Preview"
+                               target="_blank" class="btn btn-whatsapp" style="width: 100%;">
+                                <i class="fa-brands fa-whatsapp"></i> Pesan Sekarang
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
