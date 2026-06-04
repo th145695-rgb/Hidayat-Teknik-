@@ -1582,6 +1582,33 @@ if (dropzone) {
         return { prompt, estimate, provider };
     };
 
+    if (uploadSubmit) {
+        uploadSubmit.addEventListener('click', async () => {
+            if (!uploadedFile || !selectedArea) {
+                if (typeof showToast !== 'undefined') showToast('Pilih area dan upload foto terlebih dahulu.', 'error');
+                return;
+            }
+            uploadSubmit.disabled = true;
+            recIdle.style.display = 'none';
+            recResult.style.display = 'none';
+            recLoading.style.display = 'flex';
+            
+            if (window.matchMedia('(max-width: 992px)').matches) {
+                requestAnimationFrame(() => recLoading.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+            }
+            
+            try {
+                await renderAIDesign();
+            } catch (err) {
+                console.error('Error generating AI design:', err);
+                if (typeof showToast !== 'undefined') showToast('Gagal memproses gambar AI.', 'error');
+            } finally {
+                recLoading.style.display = 'none';
+                validateUpload();
+            }
+        });
+    }
+
     if (aiDownloadBtn) {
         aiDownloadBtn.addEventListener('click', () => {
             if (!latestAIPreview) {
