@@ -1503,27 +1503,200 @@ if (dropzone) {
         }
     };
 
-    const generateWithGeminiBackend = async ({ areaKey, styleKey, notes }) => {
-        const headers = { 'Content-Type': 'application/json' };
-        const localKey = localStorage.getItem('gemini_api_key');
-        if (localKey) headers['x-gemini-api-key'] = localKey;
-        
-        const response = await fetch('/api/generate-ai-design', {
-            method: 'POST',
-            headers,
-            body: JSON.stringify({
-                areaType: areaKey,
-                style: styleKey,
-                notes
-            })
-        });
-        const payload = await response.json().catch(() => ({}));
-        if (!response.ok || !payload.success || !payload.imageDataUrl) {
-            const err = new Error(payload.error || 'Gemini API belum bisa generate gambar.');
-            err.code = payload.code || 'GEMINI_ERROR';
-            throw err;
+    // ── Gemini API Key Modal Logic ─────────────────────────────────────────
+    const geminiKeyOverlay   = document.getElementById('gemini-key-modal-overlay');
+    const geminiKeyInput     = document.getElementById('gemini-api-key-input');
+    const geminiKeyStatus    = document.getElementById('gemini-key-status');
+    const btnSaveKey         = document.getElementById('btn-save-gemini-key');
+    const btnCancelKey       = document.getElementById('btn-cancel-key-modal');
+    const btnToggleVis       = document.getElementById('toggle-key-vis');
+
+    let pendingGenerateCallback = null; // called after key is saved
+
+    const openKeyModal = (onSave) => {
+        pendingGenerateCallback = onSave || null;
+        if (geminiKeyInput) {
+            const saved = localStorage.getItem('gemini_api_key') || '';
+            geminiKeyInput.value = saved;
+            geminiKeyInput.type = 'password';
         }
-        return payload;
+        if (geminiKeyStatus) { geminiKeyStatus.className = ''; geminiKeyStatus.style.display = 'none'; }
+        if (geminiKeyOverlay) geminiKeyOverlay.classList.add('active');
+    };
+
+    const closeKeyModal = () => {
+        if (geminiKeyOverlay) geminiKeyOverlay.classList.remove('active');
+        pendingGenerateCallback = null;
+    };
+
+    if (btnToggleVis) {
+        btnToggleVis.addEventListener('click', () => {
+            if (!geminiKeyInput) return;
+            const isPass = geminiKeyInput.type === 'password';
+            geminiKeyInput.type = isPass ? 'text' : 'password';
+            btnToggleVis.innerHTML = isPass
+                ? '<i class="fa-solid fa-eye-slash"></i>'
+                : '<i class="fa-solid fa-eye"></i>';
+        });
+    }
+
+    if (btnCancelKey) btnCancelKey.addEventListener('click', closeKeyModal);
+    if (geminiKeyOverlay) {
+        geminiKeyOverlay.addEventListener('click', (e) => {
+            if (e.target === geminiKeyOverlay) closeKeyModal();
+        });
+    }
+
+    if (btnSaveKey) {
+        btnSaveKey.addEventListener('click', async () => {
+            const key = geminiKeyInput ? geminiKeyInput.value.trim() : '';
+            if (!key || !key.startsWith('AIza')) {
+                if (geminiKeyStatus) {
+                    geminiKeyStatus.textContent = '⚠ Key tidak valid. Key harus diawali "AIza..."';
+                    geminiKeyStatus.className = 'error';
+                    geminiKeyStatus.style.display = 'block';
+                }
+                return;
+            }
+            // quick validation ping
+            btnSaveKey.textContent = 'Memvalidasi...';
+            btnSaveKey.disabled = true;
+            try {
+                const testUrl = `https://generativelanguage.googleapis.com/v1beta/models?key=${key}`;
+                const testRes = await fetch(testUrl);
+                if (!testRes.ok && testRes.status === 400) throw new Error('Invalid key');
+                localStorage.setItem('gemini_api_key', key);
+                updateKeyIndicator();
+                if (geminiKeyStatus) {
+                    geminiKeyStatus.textContent = '✓ API Key valid dan tersimpan!';
+                    geminiKeyStatus.className = 'success';
+                    geminiKeyStatus.style.display = 'block';
+                }
+                setTimeout(() => {
+                    closeKeyModal();
+                    if (typeof pendingGenerateCallback === 'function') pendingGenerateCallback();
+                }, 800);
+            } catch {
+                if (geminiKeyStatus) {
+                    geminiKeyStatus.textContent = '✗ Key tidak dapat divalidasi. Pastikan key benar.';
+                    geminiKeyStatus.className = 'error';
+                    geminiKeyStatus.style.display = 'block';
+                }
+            } finally {
+                btnSaveKey.innerHTML = '<i class="fa-solid fa-check"></i> Simpan & Generate';
+                btnSaveKey.disabled = false;
+            }
+        });
+    }
+
+    const updateKeyIndicator = () => {
+        const btn = document.getElementById('upload-submit');
+        if (!btn) return;
+        const hasKey = !!localStorage.getItem('gemini_api_key');
+        let dot = btn.querySelector('.key-indicator');
+        if (!dot) {
+            dot = document.createElement('span');
+            dot.className = 'key-indicator';
+            btn.appendChild(dot);
+        }
+        dot.className = hasKey ? 'key-indicator' : 'key-indicator missing';
+        btn.title = hasKey ? 'API Key Gemini aktif ✓' : 'API Key Gemini belum diatur';
+    };
+    updateKeyIndicator();
+
+    // Add gear icon to change key
+    if (uploadSubmit && uploadSubmit.parentElement) {
+        const keyBtn = document.createElement('button');
+        keyBtn.id = 'btn-set-api-key';
+        keyBtn.title = 'Atur Gemini API Key';
+        keyBtn.style.cssText = 'background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.12); color:#aaa; border-radius:8px; padding:0 0.9rem; cursor:pointer; font-size:1rem; height:48px; transition:background 0.2s; flex-shrink:0;';
+        keyBtn.innerHTML = '<i class="fa-solid fa-key"></i>';
+        keyBtn.addEventListener('mouseover', () => keyBtn.style.background = 'rgba(197,155,75,0.15)');
+        keyBtn.addEventListener('mouseout',  () => keyBtn.style.background = 'rgba(255,255,255,0.07)');
+        keyBtn.addEventListener('click', () => openKeyModal(null));
+        uploadSubmit.parentElement.appendChild(keyBtn);
+    }
+
+    // ── Direct Browser → Gemini API call ──────────────────────────────────
+    const stylePromptsClient = {
+        minimalis:  'modern black minimalist security grille with slim vertical bars, matte finish, clean proportions',
+        industrial: 'industrial black steel grille with precise geometric grid and subtle diagonal bracing, matte textured finish',
+        mewah:      'luxury black wrought iron grille with subtle elegant gold accents, premium finish, refined details',
+        klasik:     'classic black wrought iron grille with soft ornamental curves, elegant but not crowded',
+        islami:     'black Islamic geometric grille with balanced star pattern, symmetrical, premium laser-cut feel'
+    };
+
+    const generateWithGeminiBackend = ({ areaKey, styleKey, notes }) => {
+        return new Promise((resolve, reject) => {
+            const apiKey = localStorage.getItem('gemini_api_key');
+
+            const doGenerate = async (key) => {
+                const areaLabels = { jendela: 'window', pintu: 'door', balkon: 'balcony' };
+                const area = areaLabels[areaKey] || 'window';
+                const styleInstruction = stylePromptsClient[styleKey] || stylePromptsClient.minimalis;
+                let prompt = `Create a highly realistic architectural photo showing a house ${area} with a ${styleInstruction} installed. The grille should look like a real custom metal installation with beautiful lighting and realistic shadows. Professional architectural photography style.`;
+                if (notes) prompt += ` Additional requirements: ${notes}.`;
+
+                const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-preview-image-generation:generateContent?key=${key}`;
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: prompt }] }],
+                        generationConfig: { responseModalities: ['IMAGE', 'TEXT'] }
+                    })
+                });
+
+                const payload = await response.json().catch(() => ({}));
+
+                if (!response.ok) {
+                    const errMsg = payload.error?.message || 'Gemini API error';
+                    const errCode = payload.error?.status || 'GEMINI_ERROR';
+                    if (response.status === 400 || response.status === 403) {
+                        localStorage.removeItem('gemini_api_key');
+                        updateKeyIndicator();
+                    }
+                    const err = new Error(errMsg);
+                    err.code = errCode;
+                    throw err;
+                }
+
+                const parts = payload.candidates?.[0]?.content?.parts || [];
+                const imagePart = parts.find(p => p.inlineData?.data);
+                const b64 = imagePart?.inlineData?.data;
+                const mimeType = imagePart?.inlineData?.mimeType || 'image/jpeg';
+
+                if (!b64) throw new Error('Gemini tidak mengembalikan gambar.');
+
+                return {
+                    success: true,
+                    imageDataUrl: `data:${mimeType};base64,${b64}`,
+                    prompt
+                };
+            };
+
+            if (!apiKey) {
+                // No key stored — open modal and retry after save
+                openKeyModal(() => {
+                    const newKey = localStorage.getItem('gemini_api_key');
+                    if (!newKey) { reject(new Error('API Key tidak disimpan.')); return; }
+                    doGenerate(newKey).then(resolve).catch(reject);
+                });
+            } else {
+                doGenerate(apiKey).then(resolve).catch((err) => {
+                    // Key invalid — open modal to re-enter
+                    if (err.code === 'API_KEY_INVALID' || err.code === 'PERMISSION_DENIED') {
+                        openKeyModal(() => {
+                            const newKey = localStorage.getItem('gemini_api_key');
+                            if (!newKey) { reject(new Error('API Key tidak disimpan.')); return; }
+                            doGenerate(newKey).then(resolve).catch(reject);
+                        });
+                    } else {
+                        reject(err);
+                    }
+                });
+            }
+        });
     };
 
     const renderAIDesign = async () => {
@@ -1547,29 +1720,13 @@ if (dropzone) {
             designDataUrl = aiDesign.imageDataUrl;
             prompt = aiDesign.prompt || prompt;
         } catch (err) {
-            console.warn('[AI Backend] Gemini image generation unavailable:', err.message);
+            console.warn('[Gemini] Generation failed:', err.message);
             designDataUrl = previewImg.src;
             provider = 'unavailable';
-            providerLabel = 'Gemini belum aktif';
-            let helpText = `Gemini backend gagal: ${err.message}`;
-            
-            if (err.code === 'GEMINI_API_KEY_MISSING') {
-                helpText = 'GEMINI_API_KEY belum terpasang di Vercel. Silakan tambahkan di Settings → Environment Variables.';
-                const userKey = prompt('Vercel server belum dikonfigurasi dengan GEMINI_API_KEY.\n\nSebagai alternatif sementara, silakan masukkan Gemini API Key Anda di bawah ini:');
-                if (userKey && userKey.trim() !== '') {
-                    localStorage.setItem('gemini_api_key', userKey.trim());
-                    if (typeof showToast !== 'undefined') showToast('API Key disimpan. Silakan klik Generate AI lagi.', 'success');
-                    helpText = 'API Key lokal berhasil disimpan. Silakan ulangi Generate.';
-                }
-            } else if (err.code === 400 || err.message.includes('API key not valid')) {
-                helpText = 'Gemini API Key tidak valid. Silakan periksa kembali key Anda.';
-                localStorage.removeItem('gemini_api_key');
-            }
-            
+            providerLabel = 'Gemini gagal';
+            const helpText = err.message || 'Gagal menghasilkan desain AI.';
             if (aiBackendWarningText) aiBackendWarningText.textContent = helpText;
-            if (typeof showToast !== 'undefined') {
-                showToast(helpText, 'info');
-            }
+            if (typeof showToast !== 'undefined') showToast(helpText, 'error');
         }
 
         const waText = [
