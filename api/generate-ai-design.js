@@ -52,28 +52,29 @@ module.exports = async function handler(req, res) {
         const area = areaLabels[body.areaType] || 'window';
         const styleInstruction = stylePrompts[body.style] || stylePrompts.minimalis;
         
-        // Build prompt for Imagen 3 via Gemini API
-        let prompt = `A highly realistic, professional architectural photo of a house ${area} featuring a ${styleInstruction}. The image should look like a real custom metal installation. Focus on the grille design, beautiful lighting, and realistic background.`;
+        // Build prompt for Gemini 2.0 Flash Image Generation
+        let prompt = `Create a highly realistic architectural photo showing a house ${area} with a ${styleInstruction} installed. The grille should look like a real custom metal installation with beautiful lighting and realistic shadows. Professional architectural photography style.`;
         if (body.notes) prompt += ` Additional requirements: ${body.notes}.`;
 
-        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-001:predict?key=${apiKey}`;
+        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-preview-image-generation:generateContent?key=${apiKey}`;
         
         const response = await fetch(endpoint, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                instances: [
-                    { prompt: prompt }
-                ],
-                parameters: {
-                    sampleCount: 1,
-                    outputOptions: { mimeType: 'image/jpeg' }
+                contents: [{
+                    parts: [{ text: prompt }]
+                }],
+                generationConfig: {
+                    responseModalities: ['IMAGE', 'TEXT']
                 }
             })
         });
 
         const payload = await response.json().catch(() => ({}));
+        
         if (!response.ok) {
+            console.error('Gemini API error:', JSON.stringify(payload));
             res.status(response.status).json({
                 success: false,
                 code: payload.error?.code || 'GEMINI_IMAGE_ERROR',
@@ -82,7 +83,11 @@ module.exports = async function handler(req, res) {
             return;
         }
 
-        const b64 = payload.predictions?.[0]?.bytesBase64Encoded;
+        // Extract image from response parts
+        const parts = payload.candidates?.[0]?.content?.parts || [];
+        const imagePart = parts.find(p => p.inlineData?.data);
+        const b64 = imagePart?.inlineData?.data;
+        const mimeType = imagePart?.inlineData?.mimeType || 'image/jpeg';
         if (!b64) {
             res.status(502).json({ success: false, error: 'Gemini tidak mengembalikan gambar.' });
             return;
@@ -91,8 +96,8 @@ module.exports = async function handler(req, res) {
         res.status(200).json({
             success: true,
             provider: 'gemini',
-            model: 'imagen-3.0-generate-001',
-            imageDataUrl: `data:image/jpeg;base64,${b64}`,
+            model: 'gemini-2.0-flash-preview-image-generation',
+            imageDataUrl: `data:${mimeType};base64,${b64}`,
             prompt: prompt,
             usage: null
         });
