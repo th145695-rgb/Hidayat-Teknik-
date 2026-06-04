@@ -14,19 +14,90 @@
         /* --- LOGIN SECTION --- */
         #login-section {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: #0f1115; z-index: 9999;
+            background: radial-gradient(circle at top right, #1a1d24 0%, #0f1115 100%);
+            z-index: 9999;
             display: flex; align-items: center; justify-content: center;
+            overflow: hidden;
         }
+        
+        #login-section::before, #login-section::after {
+            content: ''; position: absolute; border-radius: 50%;
+            filter: blur(80px); opacity: 0.15; z-index: -1;
+            animation: floatOrb 10s infinite alternate ease-in-out;
+        }
+        #login-section::before {
+            width: 400px; height: 400px; background: #c59b4b;
+            top: -100px; left: -100px;
+        }
+        #login-section::after {
+            width: 300px; height: 300px; background: #ffffff;
+            bottom: -50px; right: -50px; animation-delay: -5s;
+        }
+        
+        @keyframes floatOrb {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(30px, 50px) scale(1.1); }
+        }
+
         .login-box {
-            background: #1a1d24; padding: 3rem; border-radius: 16px;
-            border: 1px solid rgba(197,155,75,0.2); text-align: center; width: 100%; max-width: 400px;
+            background: rgba(26, 29, 36, 0.6);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            padding: 3.5rem 2.5rem;
+            border-radius: 24px;
+            border: 1px solid rgba(197,155,75,0.3);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255,255,255,0.05);
+            text-align: center; width: 100%; max-width: 420px;
+            transform: translateY(20px); opacity: 0;
+            animation: slideUpFade 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
+        
+        @keyframes slideUpFade {
+            to { transform: translateY(0); opacity: 1; }
+            from { transform: translateY(40px); opacity: 0; }
+        }
+
+        .login-box-header { margin-bottom: 2.5rem; }
+        .login-box-header img { width: 64px; margin-bottom: 1rem; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3)); }
+        .login-box-header h2 { color: #c59b4b; font-family: 'Playfair Display', serif; font-size: 1.8rem; margin: 0 0 0.5rem 0; font-weight: 700; }
+        .login-box-header p { color: #888; margin: 0; font-size: 0.95rem; }
+
+        .input-group { position: relative; margin-bottom: 1.2rem; text-align: left; }
+        .input-group i {
+            position: absolute; left: 1.2rem; top: 50%; transform: translateY(-50%);
+            color: rgba(255,255,255,0.4); transition: all 0.3s ease; pointer-events: none;
+        }
+
         .login-box input {
-            width: 100%; padding: 1rem; margin-bottom: 1rem;
-            background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1);
-            color: #fff; border-radius: 8px; font-size: 1rem;
+            width: 100%; padding: 1.2rem 1.2rem 1.2rem 3rem;
+            background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1);
+            color: #fff; border-radius: 12px; font-size: 1rem;
+            transition: all 0.3s ease; box-sizing: border-box; font-family: var(--font-body);
         }
-        .admin-btn { width: 100%; padding: 1rem; background: var(--primary-color); color: #000; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; }
+        .login-box input:focus {
+            outline: none; border-color: #c59b4b;
+            box-shadow: 0 0 15px rgba(197, 155, 75, 0.15);
+            background: rgba(0, 0, 0, 0.6);
+        }
+        .login-box input:focus ~ i { color: #c59b4b; }
+
+        .admin-btn {
+            width: 100%; padding: 1.2rem; margin-top: 0.5rem;
+            background: linear-gradient(135deg, #d4af37, #aa7c11);
+            color: #000; border: none; border-radius: 12px; font-weight: 700;
+            font-size: 1.05rem; cursor: pointer; transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(197, 155, 75, 0.2);
+            text-transform: uppercase; letter-spacing: 1px;
+            position: relative; overflow: hidden;
+        }
+        .admin-btn::after {
+            content: ''; position: absolute; top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0) 100%);
+            transform: rotate(45deg); transition: all 0.5s ease; opacity: 0;
+        }
+        .admin-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(197, 155, 75, 0.4); }
+        .admin-btn:hover::after { opacity: 1; transform: rotate(45deg) translate(50%, 50%); }
 
         /* --- LAYOUT --- */
         #admin-wrapper { display: none; height: 100vh; display: flex; }
@@ -97,14 +168,23 @@
     <!-- LOGIN SECTION -->
     <div id="login-section">
         <div class="login-box">
-            <h2 style="color:var(--primary-color); margin-bottom:1rem;"><i class="fa-solid fa-shield-halved"></i> Admin Portal</h2>
-            <p style="color:#888; margin-bottom:2rem;">Silakan login untuk mengelola sistem</p>
+            <div class="login-box-header">
+                <img src="assets/images/logo.png" alt="Logo Hidayat Teknik" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cGF0aCBmaWxsPSIjYzU5YjRiIiBkPSJNMjU2IDUxMmMxNDEuNCAwIDI1Ni0xMTQuNiAyNTYtMjU2UzM5Ny40IDAgMjU2IDBDMTE0LjYgMCAwIDExNC42IDAgMjU2UzExNC42IDUxMiAyNTYgNTEyeiIvPjwvc3ZnPg=='" />
+                <h2>Admin Portal</h2>
+                <p>Silakan login untuk mengelola sistem</p>
+            </div>
             <form id="login-form">
-                <input type="email" id="admin-email" placeholder="Email Address" required>
-                <input type="password" id="admin-password" placeholder="Password" required>
+                <div class="input-group">
+                    <input type="email" id="admin-email" placeholder="Email Address" required autocomplete="email">
+                    <i class="fa-solid fa-envelope"></i>
+                </div>
+                <div class="input-group">
+                    <input type="password" id="admin-password" placeholder="Password" required autocomplete="current-password">
+                    <i class="fa-solid fa-lock"></i>
+                </div>
                 <button type="submit" class="admin-btn" id="btn-login">Login Akses</button>
             </form>
-            <p id="login-error" style="color: #e74c3c; margin-top: 1rem; display: none;"></p>
+            <p id="login-error" style="color: #ff6b6b; margin-top: 1.2rem; display: none; font-size: 0.9rem; background: rgba(255, 107, 107, 0.1); padding: 0.8rem; border-radius: 8px; border: 1px solid rgba(255, 107, 107, 0.3);"></p>
         </div>
     </div>
 
