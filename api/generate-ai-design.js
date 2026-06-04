@@ -24,7 +24,7 @@ const readJsonBody = async (req) => {
 
 module.exports = async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-gemini-api-key');
 
     if (req.method === 'OPTIONS') {
         res.status(204).end();
@@ -36,7 +36,11 @@ module.exports = async function handler(req, res) {
         return;
     }
 
-    const apiKey = process.env.GEMINI_API_KEY;
+    let apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey && req.headers['x-gemini-api-key']) {
+        apiKey = req.headers['x-gemini-api-key'];
+    }
+    
     if (!apiKey) {
         res.status(503).json({
             success: false,

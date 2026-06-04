@@ -1504,9 +1504,13 @@ if (dropzone) {
     };
 
     const generateWithGeminiBackend = async ({ areaKey, styleKey, notes }) => {
+        const headers = { 'Content-Type': 'application/json' };
+        const localKey = localStorage.getItem('gemini_api_key');
+        if (localKey) headers['x-gemini-api-key'] = localKey;
+        
         const response = await fetch('/api/generate-ai-design', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers,
             body: JSON.stringify({
                 areaType: areaKey,
                 style: styleKey,
@@ -1547,12 +1551,24 @@ if (dropzone) {
             designDataUrl = previewImg.src;
             provider = 'unavailable';
             providerLabel = 'Gemini belum aktif';
-            const helpText = err.code === 'GEMINI_API_KEY_MISSING'
-                ? 'GEMINI_API_KEY belum terpasang di Vercel. Silakan tambahkan di Settings → Environment Variables.'
-                : `Gemini backend gagal: ${err.message}`;
+            let helpText = `Gemini backend gagal: ${err.message}`;
+            
+            if (err.code === 'GEMINI_API_KEY_MISSING') {
+                helpText = 'GEMINI_API_KEY belum terpasang di Vercel. Silakan tambahkan di Settings → Environment Variables.';
+                const userKey = prompt('Vercel server belum dikonfigurasi dengan GEMINI_API_KEY.\n\nSebagai alternatif sementara, silakan masukkan Gemini API Key Anda di bawah ini:');
+                if (userKey && userKey.trim() !== '') {
+                    localStorage.setItem('gemini_api_key', userKey.trim());
+                    if (typeof showToast !== 'undefined') showToast('API Key disimpan. Silakan klik Generate AI lagi.', 'success');
+                    helpText = 'API Key lokal berhasil disimpan. Silakan ulangi Generate.';
+                }
+            } else if (err.code === 400 || err.message.includes('API key not valid')) {
+                helpText = 'Gemini API Key tidak valid. Silakan periksa kembali key Anda.';
+                localStorage.removeItem('gemini_api_key');
+            }
+            
             if (aiBackendWarningText) aiBackendWarningText.textContent = helpText;
             if (typeof showToast !== 'undefined') {
-                showToast('Gemini API belum aktif. Tambahkan GEMINI_API_KEY di Vercel.', 'info');
+                showToast(helpText, 'info');
             }
         }
 
